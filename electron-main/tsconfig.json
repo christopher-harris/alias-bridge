@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Choose target compatible with your Electron Node version
+    "module": "CommonJS", // Electron main/preload use CommonJS modules
+    "outDir": "../dist-electron", // Output directory for compiled JS files
+    "rootDir": ".", // Root directory of source files (electron-main)
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true, // Generate source maps for easier debugging
+    "resolveJsonModule": true // Allows importing JSON files
+    // Add "baseUrl" and "paths" if you need path mapping
+  },
+  "include": [
+    "./**/*.ts" // Compile all .ts files within the electron-main directory
+  ],
+  "exclude": [
+    "node_modules" // Exclude node_modules if any were inside electron-main (unlikely)
+  ]
+}

@@ -1,0 +1,25 @@
+<p-toast />
+
+<h5><strong>Activate Your Aliases (One-Time Setup)</strong></h5>
+<p>To make aliases managed here available in your terminal, you need to tell your shell to load them. Add the following lines, preferably at the <strong>end</strong>, of your shell's main configuration file:</p>
+<p-panel [toggleable]="false" styleClass="my-4">
+  <ng-template #header>&nbsp;</ng-template>
+  <ng-template #icons>
+    <p-button icon="pi pi-clipboard"
+              [severity]="'secondary'"
+              rounded
+              text
+              [size]="'small'"
+              [cdkCopyToClipboard]="aliasConnectorText"
+              (cdkCopyToClipboardCopied)="handleCopyToClipboardComplete()" />
+  </ng-template>
+  <div class="border-gray-400">
+    <pre><code>{{aliasConnectorText}}</code></pre>
+  </div>
+</p-panel>
+<p><strong>Common Configuration Files:</strong></p>
+<ul>
+  <li><strong>Zsh:</strong> <code>~/.zshrc</code></li>
+  <li><strong>Bash:</strong> <code>~/.bashrc</code> (most Linux, WSL, Git Bash) or <code>~/.bash_profile</code> (some macOS setups)</li>
+</ul>
+<p>After adding the lines, you must open a <strong>new</strong> terminal session for the changes to take effect.</p>

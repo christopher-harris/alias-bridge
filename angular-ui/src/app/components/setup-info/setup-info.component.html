@@ -1,0 +1,13 @@
+<p-panel header="Setup Instructions" [toggleable]="true" [collapsed]="true">
+  @switch (currentOS) {
+    @case ('win32') {
+      <app-windows-setup-instructions></app-windows-setup-instructions>
+    }
+    @case ('darwin') {
+      <app-darwin-setup-instructions></app-darwin-setup-instructions>
+    }
+    @default {
+      <p>Detecting OS for setup instructions...</p>
+    }
+  }
+</p-panel>

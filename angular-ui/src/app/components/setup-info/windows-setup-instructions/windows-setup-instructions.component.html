@@ -1,0 +1,37 @@
+<h2>Activate Aliases on Windows (Git Bash / WSL)</h2>
+<p>On Windows, AliasBridge currently saves aliases in a format compatible with Bash shells like <strong>Git
+  Bash</strong> or within the <strong>Windows Subsystem for Linux (WSL)</strong>. This method does <i>not</i> directly
+  add aliases to standard PowerShell or Command Prompt (cmd.exe).</p>
+
+<p><strong>Instructions:</strong></p>
+<ol>  <!-- Use an ordered list -->
+  <li>  <!-- Instructions for Git Bash FIRST -->
+    <strong>If using Git Bash:</strong>
+    <p>Add the following lines (preferably at the end) to your user's <code>.bashrc</code> or <code>.bash_profile</code>
+      file (usually located at <code>C:\Users\YourUsername\.bashrc</code>):</p>
+    <pre><code># Load AliasBridge Aliases
+if [ -f ~/.alias_bridge_aliases.sh ]; then
+  source ~/.alias_bridge_aliases.sh
+fi</code></pre>
+    <p>(Git Bash usually understands <code>~</code> correctly to refer to your Windows home directory where AliasBridge
+      saves the file.)</p>
+  </li>
+
+  <li> <!-- Your existing WSL instructions -->
+    <strong>If using WSL (e.g., Ubuntu):</strong>
+    <p>Add the following lines to your <code>.bashrc</code> or <code>.zshrc</code> file <i>within your WSL
+      distribution</i> (e.g., inside Ubuntu, run <code>nano ~/.bashrc</code>):</p>
+    <pre><code># Load AliasBridge Aliases from Windows Home Directory
+# Replace 'YourWindowsUsername' with your actual Windows username
+WINDOWS_ALIAS_FILE="/mnt/c/Users/YourWindowsUsername/.alias_bridge_aliases.sh"
+if [ -f "$WINDOWS_ALIAS_FILE" ]; then
+  source "$WINDOWS_ALIAS_FILE"
+fi</code></pre>
+    <p>You need to replace <code>YourWindowsUsername</code> with your actual Windows user folder name. The path starts
+      with <code>/mnt/c/</code> to access your C: drive from within WSL.</p>
+  </li>
+</ol> <!-- Close the ordered list -->
+
+<p><strong>After adding the lines</strong> to your chosen configuration file, you must open a <strong>new</strong> Git
+  Bash or WSL terminal session for the changes to take effect.</p>
+<p><i>Note: Native PowerShell support might be added in the future.</i></p>

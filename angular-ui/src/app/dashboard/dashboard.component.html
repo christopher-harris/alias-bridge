@@ -1,0 +1,17 @@
+<p-toolbar>
+  <ng-template #end>
+    <p-button label="Add Alias" text size="small" [routerLink]="['edit-alias']" />
+  </ng-template>
+</p-toolbar>
+
+<h4>Current Aliases</h4>
+<div class="text-center" *ngIf="aliases().length === 0">No aliases loaded yet.</div>
+@if (aliases().length) {
+  <ul>
+    <li *ngFor="let alias of aliases()">
+      <strong>{{ alias.name }}</strong> = <code>{{ alias.command }}</code>
+      <!-- Add delete/edit buttons later -->
+    </li>
+  </ul>
+}
+<!--<button (click)="loadAliases()">Reload Aliases</button>-->
