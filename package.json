@@ -28,25 +28,30 @@
   "build": {
     "appId": "com.yourcompany.aliasbridge",
     "productName": "AliasBridge",
+    "asar": false,
     "directories": {
-      "output": "release/"
+      "output": "release/",
+      "buildResources": "assets/build"
     },
     "files": [
       "dist-electron/**/*",
-      "dist/angular-ui/**/*",
+      "dist/alias-bridge-ui/**/*",
       "package.json"
     ],
     "extraMetadata": {
       "main": "dist-electron/main.js"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "assets/build/alias_bridge_icon_dark.icns"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "assets/build/alias_bridge_icon_dark.ico"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "assets/build/alias_bridge_icon_dark.png"
     }
   },
   "dependencies": {
