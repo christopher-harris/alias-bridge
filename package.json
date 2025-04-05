@@ -4,14 +4,17 @@
   "description": "Cross platform terminal alias manager",
   "main": "dist-electron/main.js",
   "scripts": {
+    "ng:build": "cd angular-ui && ng build --configuration production --base-href ./",
     "tsc:electron": "tsc -p electron-main/tsconfig.json",
+
+    "electron:package": "node -r dotenv/config ./node_modules/electron-builder/out/cli/cli.js",
+
+    "build": "npm run ng:build && npm run tsc:electron && npm run electron:package",
+
     "tsc:electron:watch": "tsc -p electron-main/tsconfig.json --watch",
     "ng:serve": "cd angular-ui && ng serve",
-    "ng:build": "cd angular-ui && ng build --configuration production --base-href ./",
     "electron:start:dev": "electron .",
-    "start": "npm run tsc:electron && concurrently -k \"npm:ng:serve\" \"npm:tsc:electron:watch\" \"wait-on http://localhost:4200 && npm run electron:start:dev\"",
-    "electron:package": "electron-builder",
-    "build": "npm run ng:build && npm run tsc:electron && npm run electron:package"
+    "start:dev": "npm run tsc:electron && concurrently -k \"npm:ng:serve\" \"npm:tsc:electron:watch\" \"wait-on http://localhost:4200 && npm run electron:start:dev\""
   },
   "keywords": [],
   "author": "Chris Harris",
@@ -26,7 +29,7 @@
     "wait-on": "^8.0.3"
   },
   "build": {
-    "appId": "com.yourcompany.aliasbridge",
+    "appId": "com.jrm-labs.aliasbridge",
     "productName": "AliasBridge",
     "asar": false,
     "directories": {
@@ -43,7 +46,11 @@
     },
     "mac": {
       "target": "dmg",
-      "icon": "assets/build/alias_bridge_icon_dark.icns"
+      "icon": "assets/build/alias_bridge_icon_dark.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "assets/build/entitlements.mac.plist",
+      "entitlementsInherit": "assets/build/entitlements.mac.plist"
     },
     "win": {
       "target": "nsis",
@@ -55,6 +62,7 @@
     }
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "electron-squirrel-startup": "^1.0.1"
   }
 }
