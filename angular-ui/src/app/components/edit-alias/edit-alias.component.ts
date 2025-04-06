@@ -6,7 +6,7 @@ import {TextareaModule} from 'primeng/textarea';
 import {ButtonModule} from 'primeng/button';
 import {Router, RouterModule} from '@angular/router';
 import {AliasService} from '../../services/alias.service';
-import {Alias} from '../../electron';
+import {Alias, NewAlias} from '../../electron';
 
 @Component({
   selector: 'app-edit-alias',
@@ -40,7 +40,7 @@ export class EditAliasComponent {
     if (this.aliasForm.invalid) {
       return;
     }
-    const newAlias: Alias = {
+    const newAlias: NewAlias = {
       name: this.aliasForm.get('aliasName')?.value,
       command: this.aliasForm.get('aliasCommand')?.value,
       comment: this.aliasForm.get('aliasComment')?.value,

@@ -1,17 +1,61 @@
-<p-toolbar>
-  <ng-template #end>
-    <p-button label="Add Alias" text size="small" [routerLink]="['edit-alias']" />
+<p-table [value]="aliases()" stripedRows editMode="row" dataKey="id">
+  <ng-template #caption>
+    <div class="flex justify-end">
+      <p-button icon="pi pi-plus" severity="success" rounded text [routerLink]="['edit-alias']" />
+      <button (click)="loadAliases()">Reload Aliases</button>
+    </div>
   </ng-template>
-</p-toolbar>
-
-<h4>Current Aliases</h4>
-<div class="text-center" *ngIf="aliases().length === 0">No aliases loaded yet.</div>
-@if (aliases().length) {
-  <ul>
-    <li *ngFor="let alias of aliases()">
-      <strong>{{ alias.name }}</strong> = <code>{{ alias.command }}</code>
-      <!-- Add delete/edit buttons later -->
-    </li>
-  </ul>
-}
-<!--<button (click)="loadAliases()">Reload Aliases</button>-->
+  <ng-template #header>
+    <td>Alias</td>
+    <td>Command</td>
+    <td>&nbsp;</td>
+  </ng-template>
+  <ng-template #body let-alias let-editing="editing" let-rowIndex="rowIndex">
+    <tr [pEditableRow]="alias">
+      <td>
+        <p-cellEditor>
+          <ng-template #input>
+            <input type="text" pInputText [(ngModel)]="alias.name" required />
+          </ng-template>
+          <ng-template #output>
+            {{alias.name}}
+          </ng-template>
+        </p-cellEditor>
+      </td>
+      <td>
+        <p-cellEditor>
+          <ng-template #input>
+            <input type="text" pInputText [(ngModel)]="alias.command" required />
+          </ng-template>
+          <ng-template #output>
+            {{alias.command}}
+          </ng-template>
+        </p-cellEditor>
+      </td>
+      <td>
+        <div class="flex justify-end">
+          @if (!editing) {
+            <p-button severity="secondary" icon="pi pi-pencil" type="button" rounded text pInitEditableRow (onClick)="onRowEditInit(alias)" />
+            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" text (click)="onRowDelete(alias)" />
+          }
+          @if (editing) {
+            <p-button severity="success" icon="pi pi-check" type="button" rounded text pSaveEditableRow (onClick)="onRowEditSave(alias)" />
+            <p-button severity="secondary" icon="pi pi-times" type="button" rounded text pCancelEditableRow (onClick)="onRowCancelEdit(alias)" />
+          }
+          <!--        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editProduct(product)" />-->
+          <!--        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="deleteProduct(product)" />-->
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="3">
+        <div class="p-4 flex justify-center flex-col items-center">
+          <p>No Aliases Yet!</p>
+          <p-button type="button" severity="success" label="Create first alias" [routerLink]="['edit-alias']" size="small" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

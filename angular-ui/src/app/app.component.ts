@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, computed, inject, OnDestroy, OnInit, Signal} from '@angular/core';
+import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, Signal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -6,6 +6,8 @@ import {usePreset} from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import {SetupInfoComponent} from './components/setup-info/setup-info.component';
 import {AliasService} from './services/alias.service';
+import {ToastModule} from 'primeng/toast';
+import {MessageService} from 'primeng/api';
 
 interface Alias {
   name: string;
@@ -15,16 +17,21 @@ interface Alias {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule, SetupInfoComponent],
+  imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule, SetupInfoComponent, ToastModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
+  providers: [
+    MessageService
+  ]
 })
 export class AppComponent implements OnInit, OnDestroy {
   aliasService = inject(AliasService);
+  messageService = inject(MessageService);
 
   aliases: Signal<Alias[]> = this.aliasService.aliases;
   loading: Signal<boolean> = this.aliasService.loading;
   aliasCount = computed(() => this.aliases().length);
+  successMessage = this.aliasService.successMessage();
 
   title = 'AliasBridge UI';
   messageFromMain = 'No reply yet.';
@@ -33,12 +40,39 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Inject ChangeDetectorRef to manually trigger UI updates if needed after IPC calls
   constructor(private cdr: ChangeDetectorRef) {
+    effect(() => {
+      if (this.successMessage) {
+        console.log(this.successMessage);
+      }
+    });
   }
 
   async ngOnInit(): Promise<any> {
     console.log('AppComponent initialized.');
 
     await this.aliasService.loadAliases();
+
+    window.electronAPI.onAddAliasReply((result: any) => {
+      console.log('Add Alias Reply:', result);
+      if (result.success) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Add Alias',
+          detail: `Successfully Added Alias: ${result.alias.name}`,
+        });
+      }
+    });
+
+    window.electronAPI.onDeleteAliasReply((result: any) => {
+      console.log('Add Alias Reply:', result);
+      if (result.success) {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Remove Alias',
+          detail: `Successfully Removed Alias: ${result.name}`,
+        })
+      }
+    });
 
     // // Example: Listen for replies from the main process
     // window.electronAPI?.onMessageReply((message) => {
@@ -84,25 +118,5 @@ export class AppComponent implements OnInit, OnDestroy {
     // Use the exposed API from preload.ts
     window.electronAPI?.sendMessage(message);
   }
-
-  // async loadAliases(): Promise<void> {
-  //   console.log('Requesting aliases from main process...');
-  //   try {
-  //     const fetchedAliases = await window.electronAPI?.getAliases();
-  //     if (fetchedAliases) {
-  //       this.aliases = fetchedAliases;
-  //       console.log('Aliases loaded:', this.aliases);
-  //       this.cdr.detectChanges(); // Trigger UI update
-  //     } else {
-  //       console.error('Electron API not available or getAliases returned undefined');
-  //       this.aliases = []; // Clear aliases if API is not ready
-  //     }
-  //
-  //   } catch (error) {
-  //     console.error('Error loading aliases:', error);
-  //     this.aliases = []; // Clear aliases on error
-  //     this.cdr.detectChanges();
-  //   }
-  // }
 
 }

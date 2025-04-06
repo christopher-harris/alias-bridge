@@ -1,20 +1,15 @@
 <div class="p-4">
 
-  <div class="text-center my-4 py-4">
+  <p-toast />
+
+  <div class="my-4 py-4">
     <h3>AliasBridge</h3>
     <p>Manage your aliases easily.</p>
   </div>
 
   <router-outlet></router-outlet>
 
-
-<!--  <button (click)="addAlias()" [disabled]="!newAliasName || !newAliasCommand">Add Alias</button>-->
   <p *ngIf="addStatusMessage">{{ addStatusMessage }}</p>
-
-<!--  <hr>-->
-<!--  <h2>IPC Test</h2>-->
-<!--  <button (click)="sendMessageToMain()">Send Message to Main</button>-->
-<!--  <p>Reply from Main: {{ messageFromMain }}</p>-->
 
   <app-setup-info></app-setup-info>
 </div>
