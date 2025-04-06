@@ -52,13 +52,4 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
-    // You could also focus the existing window if it's minimized
-    // const mainWindow = getMainWindow();
-    // if (mainWindow) {
-    //     if (mainWindow.isMinimized()) mainWindow.restore();
-    //     mainWindow.focus();
-    // }
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
