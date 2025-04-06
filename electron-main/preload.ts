@@ -1,5 +1,6 @@
 // electron-main/preload.js
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import {Alias} from "./src/types";
 
 console.log('Preload script loaded.');
 
@@ -11,6 +12,14 @@ export interface ElectronAPI {
     onAddAliasReply: (callback: (result: { success: boolean; name: string; error?: string }) => void) => void;
     removeAllListeners: (channel: string) => void;
     getOSPlatform: () => Promise<any>;
+
+    // --- Update takes ID and the full updated Alias object ---
+    updateAlias: (id: string, alias: Alias) => void;
+    onUpdateAliasReply: (callback: (result: { success: boolean; id: string; name: string; error?: string }) => void) => void;
+
+    // --- Delete takes ID ---
+    deleteAlias: (id: string) => void;
+    onDeleteAliasReply: (callback: (result: { success: boolean; id: string; name: string | null; error?: string }) => void) => void;
 }
 
 const api: ElectronAPI = {
@@ -22,6 +31,14 @@ const api: ElectronAPI = {
     onAddAliasReply: (callback) => ipcRenderer.on('add-alias-reply', (_event, result) => callback(result)),
     removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
     getOSPlatform: () => ipcRenderer.invoke('get-os-platform'),
+
+    // --- Update Implementation uses ID ---
+    updateAlias: (id, alias) => ipcRenderer.send('update-alias', id, alias), // Pass ID first
+    onUpdateAliasReply: (callback) => ipcRenderer.on('update-alias-reply', (_event, result) => callback(result)),
+
+    // --- Delete Implementation uses ID ---
+    deleteAlias: (id) => ipcRenderer.send('delete-alias', id),
+    onDeleteAliasReply: (callback) => ipcRenderer.on('delete-alias-reply', (_event, result) => callback(result)),
 };
 
 // Expose specific IPC functions to the Angular app (Renderer process)
