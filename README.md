@@ -45,15 +45,15 @@ It stores your aliases robustly in a local JSON file and automatically generates
 1.  **Download:** Grab the latest release for your operating system from the **[Releases Page](https://github.com/YOUR_GITHUB_USERNAME/alias-bridge/releases)**. (Replace with your actual link!)
 2.  **Install:**
     *   **macOS:** Open the `.dmg` file and drag `AliasBridge.app` to your Applications folder.
-    *   **Windows:** Run the `Setup .exe` installer.
-    *   **Linux:** Make the `.AppImage` file executable (`chmod +x AliasBridge*.AppImage`) and run it. Or install the `.deb`/`.rpm` package.
+    *   ~~**Windows:** Run the `Setup .exe` installer.~~ **<-- COMING SOON -->**
+    *   ~~**Linux:** Make the `.AppImage` file executable (`chmod +x AliasBridge*.AppImage`) and run it. Or install the `.deb`/`.rpm` package.~~ **<-- Coming Soon -->**
 3.  **One-Time Shell Setup (CRUCIAL):** You need to tell your terminal shell to load the aliases managed by AliasBridge. Add the following lines **to the end** of your shell's configuration file:
 
     *   **macOS (Zsh - Default):** Edit `~/.zshrc`
     *   **macOS (Bash):** Edit `~/.bash_profile` or `~/.bashrc`
-    *   **Linux (Bash):** Edit `~/.bashrc`
-    *   **Linux (Zsh):** Edit `~/.zshrc`
-    *   **Windows (Git Bash):** Edit `~/.bashrc` (usually `C:\Users\YourUsername\.bashrc`)
+    *   ~~**Linux (Bash):** Edit `~/.bashrc`~~
+    *   ~~**Linux (Zsh):** Edit `~/.zshrc`~~
+    *   ~~**Windows (Git Bash):** Edit `~/.bashrc` (usually `C:\Users\YourUsername\.bashrc`)~~
 
     ```bash
     # Load AliasBridge Aliases
