@@ -1,9 +1,7 @@
 # AliasBridge
 
 <p align="center">
-  <!-- Add a compelling screenshot or GIF here later! -->
-  <!-- <img src="docs/screenshot.png" alt="AliasBridge Screenshot" width="600"/> -->
-  **[Screenshot Placeholder: Add a great screenshot of the AliasBridge UI!]**
+  <img src="assets/v1_screenshot.png" alt="AliasBridge Screenshot" width="600"/>
 </p>
 
 A simple, cross-platform desktop application to easily manage your command-line terminal aliases. Stop editing hidden config files and keep your shortcuts organized!
