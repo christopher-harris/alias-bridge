@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import {EditAliasComponent} from './components/edit-alias/edit-alias.component';
+import {AddAliasComponent} from './components/add-alias/add-alias.component';
 import {DashboardComponent} from './dashboard/dashboard.component';
 
 export const routes: Routes = [
@@ -8,8 +8,8 @@ export const routes: Routes = [
     component: DashboardComponent,
   },
   {
-    path: 'edit-alias',
-    component: EditAliasComponent
+    path: 'add-alias',
+    component: AddAliasComponent
   },
   {
     path: 'dashboard',

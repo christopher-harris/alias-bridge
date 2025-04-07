@@ -8,6 +8,7 @@ import {RouterModule} from '@angular/router';
 import {TableModule} from 'primeng/table';
 import {InputTextModule} from 'primeng/inputtext';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {SetupInfoComponent} from '../components/setup-info/setup-info.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +21,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
     InputTextModule,
     FormsModule,
     ReactiveFormsModule,
+    SetupInfoComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'

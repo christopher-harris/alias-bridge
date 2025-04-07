@@ -20,6 +20,7 @@ export function createWindow(): BrowserWindow {
             contextIsolation: true,
             nodeIntegration: false,
         },
+        frame: false,
     });
 
     // Force open DevTools even in production FOR DEBUGGING ONLY

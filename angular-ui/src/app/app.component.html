@@ -1,15 +1,20 @@
-<div class="p-4">
+<p-toolbar class="title-bar-drag-region" styleClass="bg-gradient-to-t from-slate-50">
+  <ng-template #start>
+    <img src="assets/alias_bridge_icon_dark.png" alt="aliasBridge icon" width="32" height="32" />
+    <p class="ml-4">AliasBridge</p>
+  </ng-template>
+<!--  <ng-template #end>-->
+<!--    <p-button type="button" icon="pi pi-refresh" severity="secondary" rounded text (onClick)="loadAliases()" [size]="'small'" />-->
+<!--  </ng-template>-->
+</p-toolbar>
+
+<div class="p-4 mt-12">
 
   <p-toast />
 
-  <div class="my-4 py-4">
-    <h3>AliasBridge</h3>
-    <p>Manage your aliases easily.</p>
+  <div class="my-4">
+    <router-outlet></router-outlet>
   </div>
 
-  <router-outlet></router-outlet>
-
   <p *ngIf="addStatusMessage">{{ addStatusMessage }}</p>
-
-  <app-setup-info></app-setup-info>
 </div>

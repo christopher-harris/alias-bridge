@@ -8,6 +8,8 @@ import {SetupInfoComponent} from './components/setup-info/setup-info.component';
 import {AliasService} from './services/alias.service';
 import {ToastModule} from 'primeng/toast';
 import {MessageService} from 'primeng/api';
+import {ToolbarModule} from 'primeng/toolbar';
+import {ButtonModule} from 'primeng/button';
 
 interface Alias {
   name: string;
@@ -17,7 +19,7 @@ interface Alias {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule, SetupInfoComponent, ToastModule],
+  imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule, SetupInfoComponent, ToastModule, ToolbarModule, ButtonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   providers: [
@@ -45,6 +47,10 @@ export class AppComponent implements OnInit, OnDestroy {
         console.log(this.successMessage);
       }
     });
+  }
+
+  async loadAliases(): Promise<void> {
+    await this.aliasService.loadAliases();
   }
 
   async ngOnInit(): Promise<any> {
