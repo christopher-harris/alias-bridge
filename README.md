@@ -1,7 +1,7 @@
 # AliasBridge
 
 <p align="center">
-  <img src="assets/v1_screenshot.png" alt="AliasBridge Screenshot" width="600"/>
+  <img src="assets/screenshot_v1.png" alt="AliasBridge Screenshot" width="600"/>
 </p>
 
 A simple, cross-platform desktop application to easily manage your command-line terminal aliases. Stop editing hidden config files and keep your shortcuts organized!
