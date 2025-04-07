@@ -35,8 +35,8 @@ It stores your aliases robustly in a local JSON file and automatically generates
 ## 🖥️ Supported Platforms
 
 *   **macOS:** Fully supported (tested with Zsh and Bash).
-*   **Windows:** Supported via **Git Bash** or **Windows Subsystem for Linux (WSL)** environments (generates a `.sh` file compatible with these). Direct PowerShell/CMD support is not currently implemented.
-*   **Linux:** Fully supported (tested with Bash and Zsh).
+*   ~~**Windows:** Supported via **Git Bash** or **Windows Subsystem for Linux (WSL)** environments (generates a `.sh` file compatible with these). Direct PowerShell/CMD support is not currently implemented.~~
+*   ~~**Linux:** Fully supported (tested with Bash and Zsh).~~
 
 ## 🚀 Getting Started (For Users)
 
