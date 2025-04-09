@@ -1,15 +1,24 @@
-import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, Signal} from '@angular/core';
+import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {usePreset} from '@primeng/themes';
-import Aura from '@primeng/themes/aura';
-import {SetupInfoComponent} from './components/setup-info/setup-info.component';
 import {AliasService} from './services/alias.service';
 import {ToastModule} from 'primeng/toast';
 import {MessageService} from 'primeng/api';
 import {ToolbarModule} from 'primeng/toolbar';
 import {ButtonModule} from 'primeng/button';
+import {AppearanceService} from './services/appearance.service';
+import {AppearanceSetting, PrimeTheme, UpdateStatus} from './electron';
+import {DrawerModule} from 'primeng/drawer';
+import {SelectButtonChangeEvent, SelectButtonModule} from 'primeng/selectbutton';
+import {UiThemeService} from './services/ui-theme.service';
+import {usePreset} from '@primeng/themes';
+import Aura from '@primeng/themes/aura';
+import Lara from '@primeng/themes/lara';
+import Nora from '@primeng/themes/nora';
+import Material from '@primeng/themes/material';
+import {UpdateService} from './services/update.service';
+import {isDevMode} from '@angular/core';
 
 interface Alias {
   name: string;
@@ -19,7 +28,17 @@ interface Alias {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, FormsModule, ReactiveFormsModule, SetupInfoComponent, ToastModule, ToolbarModule, ButtonModule],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    FormsModule,
+    ReactiveFormsModule,
+    ToastModule,
+    ToolbarModule,
+    ButtonModule,
+    DrawerModule,
+    SelectButtonModule,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   providers: [
@@ -28,12 +47,27 @@ interface Alias {
 })
 export class AppComponent implements OnInit, OnDestroy {
   aliasService = inject(AliasService);
+  uiThemeService = inject(UiThemeService);
   messageService = inject(MessageService);
+  appearanceService = inject(AppearanceService);
+  updateService = inject(UpdateService);
+  currentAppearanceSetting: Signal<AppearanceSetting> = this.appearanceService.appearanceSetting;
+  activeAppearance = this.appearanceService.activeAppearance;
+  appearanceToggleIcon = computed(() => this.activeAppearance() === 'dark' ? 'pi pi-sun' : 'pi pi-moon');
+  settingsDrawerVisible = signal<boolean>(false);
+  availableAppearanceOptions = this.appearanceService.availableAppearanceSettings;
+  availableThemeOptions = this.uiThemeService.availablePrimeThemes;
+  currentPrimeTheme = this.uiThemeService.primeTheme;
 
   aliases: Signal<Alias[]> = this.aliasService.aliases;
   loading: Signal<boolean> = this.aliasService.loading;
   aliasCount = computed(() => this.aliases().length);
   successMessage = this.aliasService.successMessage();
+
+  updateStatus: Signal<UpdateStatus>;
+  isUpdateReady: Signal<boolean>;
+
+  isDevMode = isDevMode();
 
   title = 'AliasBridge UI';
   messageFromMain = 'No reply yet.';
@@ -43,10 +77,14 @@ export class AppComponent implements OnInit, OnDestroy {
   // Inject ChangeDetectorRef to manually trigger UI updates if needed after IPC calls
   constructor(private cdr: ChangeDetectorRef) {
     effect(() => {
+      console.log(this.activeAppearance());
+      this.setPrimeTheme(this.currentPrimeTheme());
       if (this.successMessage) {
         console.log(this.successMessage);
       }
     });
+    this.updateStatus = this.updateService.updateStatus;
+    this.isUpdateReady = this.updateService.isUpdateReady;
   }
 
   async loadAliases(): Promise<void> {
@@ -118,11 +156,64 @@ export class AppComponent implements OnInit, OnDestroy {
     window.electronAPI?.removeAllListeners('add-alias-reply');
   }
 
+  setPrimeTheme(theme: PrimeTheme) {
+    console.log(theme);
+    switch (theme) {
+      case 'aura':
+        usePreset(Aura);
+        break;
+      case 'lara':
+        usePreset(Lara);
+        break;
+      case 'nora':
+        usePreset(Nora);
+        break;
+      case 'material':
+        usePreset(Material);
+        break;
+      default:
+        usePreset(Aura);
+        break;
+    }
+  }
+
   sendMessageToMain(): void {
     const message = 'Hello from Angular!';
     console.log('Sending message to main:', message);
-    // Use the exposed API from preload.ts
+    // Use the exposed API from preload-scripts.entry.ts
     window.electronAPI?.sendMessage(message);
+  }
+
+  handleAppearanceClicked() {
+    // console.log(this.activeAppearance());
+    if (this.activeAppearance() === 'dark') {
+      this.appearanceService.setAppearancePreference('light');
+    } else {
+      this.appearanceService.setAppearancePreference('dark');
+    }
+  }
+
+  handleSettingsClicked() {
+    this.settingsDrawerVisible.set(!this.settingsDrawerVisible());
+  }
+
+  handleAppearanceChanged(event: SelectButtonChangeEvent) {
+    this.appearanceService.setAppearancePreference(event.value);
+  }
+
+  handleThemeChanged(event: SelectButtonChangeEvent) {
+    this.uiThemeService.setPrimeThemePreference(event.value);
+    this.setPrimeTheme(event.value);
+  }
+
+  manualCheckForUpdates(): void {
+    if (!isDevMode) {
+      this.updateService.checkUpdates();
+    }
+  }
+
+  restartAndInstall(): void {
+    this.updateService.installUpdate();
   }
 
 }

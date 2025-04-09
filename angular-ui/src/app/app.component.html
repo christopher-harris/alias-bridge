@@ -1,14 +1,20 @@
-<p-toolbar class="title-bar-drag-region" styleClass="bg-gradient-to-t from-slate-50">
+<p-toolbar styleClass="bg-gradient-to-t from-slate-50">
   <ng-template #start>
-    <img src="assets/alias_bridge_icon_dark.png" alt="aliasBridge icon" width="32" height="32" />
+    @if (activeAppearance() === 'dark') {
+      <img src="assets/alias_bridge_icon_light.png" alt="aliasBridge icon" width="32" height="32" />
+    } @else {
+      <img src="assets/alias_bridge_icon_dark.png" alt="aliasBridge icon" width="32" height="32" />
+    }
     <p class="ml-4">AliasBridge</p>
   </ng-template>
-<!--  <ng-template #end>-->
-<!--    <p-button type="button" icon="pi pi-refresh" severity="secondary" rounded text (onClick)="loadAliases()" [size]="'small'" />-->
-<!--  </ng-template>-->
+  <ng-template #end>
+    <p-button type="button" [icon]="'pi pi-cog'" text size="small" (onClick)="handleSettingsClicked()" />
+    <p-button type="button" [icon]="appearanceToggleIcon()" text [size]="'small'" (onClick)="handleAppearanceClicked()" />
+    <p-button type="button" icon="pi pi-refresh" severity="secondary" rounded text (onClick)="loadAliases()" [size]="'small'" />
+  </ng-template>
 </p-toolbar>
 
-<div class="p-4 mt-12">
+<div class="p-4 mt-6">
 
   <p-toast />
 
@@ -18,3 +24,21 @@
 
   <p *ngIf="addStatusMessage">{{ addStatusMessage }}</p>
 </div>
+
+<p-drawer [visible]="settingsDrawerVisible()" header="Settings" (onHide)="handleSettingsClicked()" position="right">
+  <div class="p-4 space-y-12">
+    <div>
+      <label>Appearance: </label>
+      <p-selectButton [options]="availableAppearanceOptions" [ngModel]="activeAppearance()" (onChange)="handleAppearanceChanged($event)" size="small" />
+    </div>
+
+    <div>
+      <label>Theme: </label>
+      <p-selectButton [options]="availableThemeOptions" [ngModel]="currentPrimeTheme()" (onChange)="handleThemeChanged($event)" size="small" />
+    </div>
+  </div>
+</p-drawer>
+
+<p>{{updateStatus() | json}}</p>
+
+<p-button [label]="'Check for Updates'" (onClick)="manualCheckForUpdates()" />

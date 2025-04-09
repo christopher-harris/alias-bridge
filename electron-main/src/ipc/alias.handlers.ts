@@ -1,30 +1,11 @@
-import {BrowserWindow, ipcMain, IpcMainEvent, IpcMainInvokeEvent, nativeTheme} from "electron";
-import {PLATFORM} from "./config";
-import {Alias, AppearanceSetting, IncomingAliasData, PrimeTheme} from "./types";
-import {readAliasData, saveAliasData} from "./data-store";
-import {regenerateAliasShellFile} from "./shell-generator";
+import {ipcMain, IpcMainEvent, IpcMainInvokeEvent} from "electron";
+import {Alias, IncomingAliasData} from "../types";
+import {readAliasData, saveAliasData} from "../data-store";
+import {regenerateAliasShellFile} from "../shell-generator";
 import { v4 as uuidv4 } from 'uuid';
-import {
-    getCurrentAppearance,
-    getAppearanceSetting,
-    setAppearanceSetting,
-    getPrimeThemeSetting, setPrimeThemeSetting
-} from "./settings-manager";
 
-export function registerAllIpcHandlers(): void {
-    console.log('Registering IPC Handlers...');
-
-    // --- Basic Test Handler ---
-    ipcMain.on('send-message-to-main', (event: IpcMainEvent, arg: string) => {
-        console.log('IPC: Received message:', arg);
-        event.reply('message-from-main', `Main process received: "${arg}" at ${new Date()}`);
-    });
-
-    // --- OS Info Handler ---
-    ipcMain.handle('get-os-platform', (): string => {
-        console.log('IPC: Handling get-os-platform');
-        return PLATFORM;
-    });
+export function registerAliasHandlers(): void {
+    console.log('Registering Alias IPC Handlers...');
 
     // --- Alias Handlers ---
     ipcMain.handle('get-aliases', async (event: IpcMainInvokeEvent): Promise<Alias[]> => {
@@ -182,108 +163,5 @@ export function registerAllIpcHandlers(): void {
             event.reply('delete-alias-reply', { success: false, id: idToDelete, name: deletedAliasName, error: error.message });
         }
     });
-
-    // APPEARANCE/SETTINGS HANDLERS
-    ipcMain.handle('settings:get-appearance', (): AppearanceSetting => {
-        console.log('IPC: Handling settings:get-appearance');
-        return getAppearanceSetting();
-    });
-
-    ipcMain.handle('settings:set-appearance', (event, appearance: AppearanceSetting) => {
-        // Note: Using handle means we could return success/failure, but
-        // for simple settings, just performing the action might be enough.
-        // Or use ipcMain.on if no return value is needed.
-        console.log(`IPC: Handling settings:set-appearance request: ${appearance}`);
-        try {
-            setAppearanceSetting(appearance);
-            // --- IMPORTANT: Notify renderer about the effective appearance change ---
-            // We need access to the main window to send the update
-            const window = BrowserWindow.fromWebContents(event.sender);
-            if (window) {
-                const effectiveappearance = getCurrentAppearance();
-                console.log(`Notifying renderer of effective appearance change: ${effectiveappearance}`);
-                window.webContents.send('appearance-updated', effectiveappearance);
-            }
-            return { success: true };
-        } catch (error: any) {
-            console.error("Error in settings:set-appearance:", error);
-            return { success: false, error: error.message };
-        }
-    });
-
-    /**
-     * Provides the *current* OS appearance, ignoring user setting
-     */
-    ipcMain.handle('appearance:get-system-appearance', (): 'light' | 'dark' => {
-        return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
-    });
-
-    /**
-     * Provides the appearance that should currently be applied based on setting + system
-     */
-    ipcMain.handle('appearance:get-current-effective-appearance', (): 'light' | 'dark' => {
-        return getCurrentAppearance();
-    });
-
-    /**
-     * Provides the selected Prime Theme
-     */
-    ipcMain.handle('settings:get-current-prime-theme', (): PrimeTheme => {
-        return getPrimeThemeSetting();
-    });
-
-    /**
-     * Sets Prime Theme
-     */
-    ipcMain.handle('settings:set-prime-theme', (event, theme: PrimeTheme): any => {
-        try {
-            setPrimeThemeSetting(theme);
-            const window = BrowserWindow.fromWebContents(event.sender);
-            if (window) {
-                const theme = getPrimeThemeSetting();
-                window.webContents.send('theme:theme-updated', theme);
-            }
-            return { success: true, theme };
-        } catch (error: any) {
-            console.error("Error setting theme:", error);
-            return { success: false, error: error.message };
-        }
-    });
-
-    console.log('IPC Handlers Registered.');
 }
 
-
-
-
-
-
-// import {ipcMain, IpcMainEvent} from "electron";
-// import {PLATFORM} from "./config";
-// import {registerAliasHandlers, registerSettingsHandlers, registerUpdateHandlers} from "./ipc";
-//
-// /**
-//  * Registers all IPC handlers for the application by calling
-//  * registration functions from feature-specific modules.
-//  */
-// export function registerAllIpcHandlers(): void {
-//     console.log('Registering IPC Handlers...');
-//
-//     // --- Basic Test Handler ---
-//     ipcMain.on('send-message-to-main', (event: IpcMainEvent, arg: string) => {
-//         console.log('IPC: Received message:', arg);
-//         event.reply('message-from-main', `Main process received: "${arg}" at ${new Date()}`);
-//     });
-//
-//     // --- OS Info Handler ---
-//     ipcMain.handle('get-os-platform', (): string => {
-//         console.log('IPC: Handling get-os-platform');
-//         return PLATFORM;
-//     });
-//
-//     registerAliasHandlers();
-//     registerSettingsHandlers();
-//     registerUpdateHandlers();
-//
-//     console.log('IPC Handlers Registered.');
-// }

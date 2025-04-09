@@ -33,14 +33,14 @@ export class AliasService implements OnDestroy {
 
     // Example of using effect (optional): log changes
     effect(() => {
-      console.log('AliasService: Aliases changed, count:', this.aliasCount());
+      // console.log('AliasService: Aliases changed, count:', this.aliasCount());
       // Note: Avoid triggering async operations directly inside effects
       // if they update signals the effect depends on, to prevent loops.
     });
   }
 
   ngOnDestroy(): void {
-    console.log('AliasService: Destroying and cleaning up listeners');
+    // console.log('AliasService: Destroying and cleaning up listeners');
     window.electronAPI?.removeAllListeners('add-alias-reply');
     window.electronAPI?.removeAllListeners('update-alias-reply');
     window.electronAPI?.removeAllListeners('delete-alias-reply');
@@ -56,9 +56,9 @@ export class AliasService implements OnDestroy {
       return;
     }
 
-    console.log('AliasService: Setting up add-alias-reply listener (for Signals)');
+    // console.log('AliasService: Setting up add-alias-reply listener (for Signals)');
     const handleAddAliasReply = (result: { success: boolean; name: string; error?: string }) => {
-      console.log('AliasService: Received add-alias-reply (for Signals):', result);
+      // console.log('AliasService: Received add-alias-reply (for Signals):', result);
 
 
       // *** Still need NgZone.run() for IPC callbacks ***
@@ -84,7 +84,7 @@ export class AliasService implements OnDestroy {
         if (result.success) {
           // --- SET SUCCESS MESSAGE ---
           const message = `Alias '${result.name || 'ID: ' + result.id}' deleted successfully!`;
-          console.log(message);
+          // console.log(message);
           this.successState.set(message);
           // ---
 
@@ -105,7 +105,7 @@ export class AliasService implements OnDestroy {
    * Fetches the current list of aliases from the Electron main process.
    */
   async loadAliases(): Promise<void> {
-    console.log('AliasService: Requesting aliases (for Signals)...');
+    // console.log('AliasService: Requesting aliases (for Signals)...');
     if (!window.electronAPI) {
       console.error('AliasService: Electron API is not available.');
       this.errorState.set('Electron API is not available.');
@@ -117,7 +117,7 @@ export class AliasService implements OnDestroy {
 
     try {
       const fetchedAliases = await window.electronAPI.getAliases();
-      console.log('AliasService: Aliases received (for Signals):', fetchedAliases);
+      // console.log('AliasService: Aliases received (for Signals):', fetchedAliases);
       // Update the state signal
       this.aliasesState.set(fetchedAliases || []);
     } catch (error: any) {
@@ -133,7 +133,7 @@ export class AliasService implements OnDestroy {
    * Sends a request to the Electron main process to add a new alias.
    */
   addAlias(alias: NewAlias): void {
-    console.log('AliasService: Requesting to add alias (for Signals):', alias);
+    // console.log('AliasService: Requesting to add alias (for Signals):', alias);
     if (!window.electronAPI) {
       console.error('AliasService: Electron API is not available.');
       this.errorState.set('Electron API is not available.');
@@ -150,7 +150,7 @@ export class AliasService implements OnDestroy {
     // Note: The 'alias' object passed in should contain the *updated* data,
     // but it MUST also retain the original 'id'. The backend uses the 'id' parameter
     // passed separately for lookup, and the 'alias' object for the new data.
-    console.log(`AliasService: Requesting update for ID '${id}' with data:`, alias);
+    // console.log(`AliasService: Requesting update for ID '${id}' with data:`, alias);
     if (!window.electronAPI) {
       this.handleError('update', alias.name, 'Electron API not available');
       return;
@@ -170,7 +170,7 @@ export class AliasService implements OnDestroy {
 
   // --- UPDATED: Delete Alias Method (uses ID) ---
   deleteAlias(id: string): void {
-    console.log(`AliasService: Requesting delete for alias ID: ${id}`);
+    // console.log(`AliasService: Requesting delete for alias ID: ${id}`);
     if (!window.electronAPI) {
       this.handleError('delete', `ID: ${id}`, 'Electron API not available'); // Update name placeholder
       return;

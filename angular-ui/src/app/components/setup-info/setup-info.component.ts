@@ -23,10 +23,10 @@ export class SetupInfoComponent implements OnInit {
     try {
       this.currentOS = await window.electronAPI?.getOSPlatform() || 'unknown';
       // this.currentOS = 'win32';
-      console.log('Detected OS: ', this.currentOS);
+      // console.log('Detected OS: ', this.currentOS);
       this.cdr.detectChanges();
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       this.currentOS = 'error';
     }
   }

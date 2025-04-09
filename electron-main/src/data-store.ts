@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import { JSON_DATA_FILE_PATH } from './config';
-import type { Alias } from './types'; // Use 'type' for interface import
+import type { Alias } from './types';
 
 /**
  * Reads alias data from the JSON file.

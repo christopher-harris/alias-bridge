@@ -1,0 +1,27 @@
+<p-card header="New Alias" class="border-0" styleClass="border-0">
+  <ng-template #content>
+    <form [formGroup]="aliasForm" class="space-y-12">
+      <div>
+        <label for="aliasName">Name:</label>
+        <input id="aliasName" type="text" pInputText formControlName="aliasName" fluid />
+      </div>
+      <div>
+        <label for="aliasCommand">Command:</label>
+        <input type="text" pInputText id="aliasCommand" formControlName="aliasCommand" size="50" fluid />
+      </div>
+      <div>
+        <label for="aliasComment">Comment:</label>
+        <textarea id="aliasComment" formControlName="aliasComment" pTextarea rows="2" cols="50" fluid></textarea>
+        <!-- Or use input type="text" -->
+        <!-- <input type="text" id="aliasComment" [(ngModel)]="newAliasComment" size="50"> -->
+      </div>
+
+    </form>
+  </ng-template>
+  <ng-template #footer>
+    <div class="flex gap-4 mt-1">
+      <p-button class="w-full" styleClass="w-full" label="Cancel" severity="secondary" text (onClick)="handleCancelClicked()" outlined />
+      <p-button class="w-full" styleClass="w-full" label="Save" [disabled]="aliasForm.untouched" (onClick)="saveAlias()" />
+    </div>
+  </ng-template>
+</p-card>

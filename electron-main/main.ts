@@ -1,9 +1,13 @@
 import { app, BrowserWindow } from 'electron';
-import { registerIpcHandlers } from './src/ipc-handlers';
-import { createWindow, getMainWindow } from './src/window-manager';
+import {registerAllIpcHandlers} from './src/ipc-handlers';
+import { ensureMainWindow, showMainWindow, getMainWindow } from './src/window-manager';
 import { readAliasData } from './src/data-store'; // For initial generation
 import { regenerateAliasShellFile } from './src/shell-generator'; // For initial generation
-import { PLATFORM } from './src/config'; // Use platform constant
+import { PLATFORM } from './src/config';
+import {watchSystemAppearance} from "./src/settings-manager";
+import {createTray, destroyTray} from "./src/tray-manager";
+import {closeViewerWindow} from "./src/viewer-window-manager";
+import { initAutoUpdater } from './src/update-manager';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -15,21 +19,36 @@ if (require('electron-squirrel-startup')) {
  */
 async function initializeApp(): Promise<void> {
     console.log('App is ready, initializing...');
-    // Ensure shell file is consistent on startup
+
+    // Perform setup tasks first
     try {
         console.log('Regenerating shell file on startup...');
         const initialAliases = await readAliasData();
         await regenerateAliasShellFile(initialAliases);
     } catch (error) {
         console.error('Failed to regenerate shell file on startup:', error);
-        // TODO: Maybe show an error dialog to the user?
     }
 
     // Register all IPC handlers
-    registerIpcHandlers();
+    registerAllIpcHandlers();
 
-    // Create the main application window
-    createWindow();
+    // --- Create Tray Icon ---
+    createTray(); // Tray should usually be created before the window might be shown
+
+    // --- Ensure Main Window Exists and Get Reference ---
+    // Calls ensureMainWindow() which returns the instance (creating if needed)
+    const mainWindow = ensureMainWindow(); // <-- Use the function from window-manager
+
+    // --- Start watching system theme changes, passing the correct window instance ---
+    watchSystemAppearance(mainWindow); // <-- Pass the mainWindow variable here
+
+    // --- Initialize Auto Updater ---
+    initAutoUpdater(mainWindow);
+
+    // --- Optionally show the main window on initial launch ---
+    // If you want the main window to appear immediately when the app starts:
+    showMainWindow();
+    // If you want it to ONLY be opened via Tray or Dock icon, comment out/remove showMainWindow() here.
 }
 
 // --- App Lifecycle ---
@@ -46,10 +65,27 @@ app.on('window-all-closed', () => {
     }
 });
 
+
 app.on('activate', () => {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
-    }
+    // Keep this logic - show main window on dock click
+    console.log('App activate event triggered.');
+    showMainWindow();
+});
+
+// --- Handle Quit ---
+app.on('before-quit', () => {
+    // This fires when app.quit() is called or user quits via Cmd+Q etc.
+    // Perform cleanup here BEFORE windows start closing.
+    console.log('Before quit event triggered. Cleaning up.');
+    destroyTray(); // Clean up tray icon FIRST
+    closeViewerWindow(); // Ensure viewer window is closed
+    // We no longer need to set a flag. Electron will now proceed to
+    // close all windows naturally after this event handler finishes.
+    // The 'close' event on mainWindow will NOT be prevented now,
+    // allowing the window to be destroyed.
+});
+
+// The 'quit' event fires after all windows are closed.
+app.on('quit', () => {
+    console.log("Application has quit.");
 });

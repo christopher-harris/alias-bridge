@@ -1,17 +1,11 @@
-// electron-main/preload.js
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import {Alias} from "./src/types";
+import {Alias, IncomingAliasData} from "../types";
+import {ipcRenderer} from "electron";
 
-console.log('Preload script loaded.');
-
-export interface ElectronAPI {
-    sendMessage: (message: string) => void;
-    onMessageReply: (callback: (message: string) => void) => void;
+export interface AliasApi {
     getAliases: () => Promise<Array<{ name: string; command: string; comment?: string }>>; // Match main process return type
-    addAlias: (alias: { name: string; command: string; comment?: string }) => void;
+
+    addAlias: (alias: IncomingAliasData) => void;
     onAddAliasReply: (callback: (result: { success: boolean; name: string; error?: string }) => void) => void;
-    removeAllListeners: (channel: string) => void;
-    getOSPlatform: () => Promise<any>;
 
     // --- Update takes ID and the full updated Alias object ---
     updateAlias: (id: string, alias: Alias) => void;
@@ -22,15 +16,11 @@ export interface ElectronAPI {
     onDeleteAliasReply: (callback: (result: { success: boolean; id: string; name: string | null; error?: string }) => void) => void;
 }
 
-const api: ElectronAPI = {
-    sendMessage: (message) => ipcRenderer.send('send-message-to-main', message),
-    // Use (_event: IpcRendererEvent, ...) for typed events if needed
-    onMessageReply: (callback) => ipcRenderer.on('message-from-main', (_event, value) => callback(value)),
+export const aliasApi: AliasApi = {
     getAliases: () => ipcRenderer.invoke('get-aliases'),
+
     addAlias: (alias) => ipcRenderer.send('add-alias', alias),
     onAddAliasReply: (callback) => ipcRenderer.on('add-alias-reply', (_event, result) => callback(result)),
-    removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
-    getOSPlatform: () => ipcRenderer.invoke('get-os-platform'),
 
     // --- Update Implementation uses ID ---
     updateAlias: (id, alias) => ipcRenderer.send('update-alias', id, alias), // Pass ID first
@@ -40,7 +30,3 @@ const api: ElectronAPI = {
     deleteAlias: (id) => ipcRenderer.send('delete-alias', id),
     onDeleteAliasReply: (callback) => ipcRenderer.on('delete-alias-reply', (_event, result) => callback(result)),
 };
-
-// Expose specific IPC functions to the Angular app (Renderer process)
-// Avoid exposing the entire ipcRenderer object for security reasons.
-contextBridge.exposeInMainWorld('electronAPI', api);

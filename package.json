@@ -37,7 +37,8 @@
     "files": [
       "dist-electron/**/*",
       "dist/alias-bridge-ui/**/*",
-      "package.json"
+      "package.json",
+      "assets/build/alias_bridge_icon_dark/icon.iconset/icon_16x16.png"
     ],
     "extraMetadata": {
       "main": "dist-electron/main.js"
@@ -57,11 +58,19 @@
     "linux": {
       "target": "AppImage",
       "icon": "assets/build/alias_bridge_icon_dark.png"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Christopher Harris",
+      "repo": "https://github.com/christopher-harris/alias-bridge"
     }
   },
   "dependencies": {
     "dotenv": "^16.4.7",
+    "electron-log": "^5.3.3",
     "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.1",
+    "electron-updater": "^6.6.2",
     "uuid": "^11.1.0"
   }
 }
