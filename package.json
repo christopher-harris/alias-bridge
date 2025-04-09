@@ -1,6 +1,6 @@
 {
   "name": "alias-bridge",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Cross platform terminal alias manager",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -46,7 +46,10 @@
       "main": "dist-electron/main.js"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "assets/build/alias_bridge_icon_dark.icns",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
