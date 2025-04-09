@@ -93,12 +93,18 @@ function createWindowInternal(): BrowserWindow {
     // --- Modified Close Handler for Tray Icon Behavior ---
     // Prevents app from quitting when window is closed, hides instead.
     newWindow.on('close', (event: Event) => {
-        console.log('Main window "close" event intercepted, hiding window.');
-        event.preventDefault(); // Prevent the window from actually closing
-        newWindow.hide(); // Hide the window instead
-        if (process.platform === 'darwin') {
-            // Optional: Hide dock icon when window hides on macOS
-            // app.dock?.hide();
+        if (!(global as any).isQuitting) {
+            console.log('Main window "close" event intercepted, hiding window.');
+            event.preventDefault(); // Prevent the window from actually closing
+            newWindow.hide(); // Hide the window instead
+            newWindow.close();
+            if (process.platform === 'darwin') {
+                // Optional: Hide dock icon when window hides on macOS
+                // app.dock?.hide();
+            }
+        } else {
+            console.log('Main window close allowed (app quitting).');
+            // Allow default behavior (window closes)
         }
     });
 
