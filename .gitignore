@@ -6,6 +6,7 @@
 # Node dependencies
 /node_modules/
 /angular-ui/node_modules/ # Explicitly ignore nested node_modules
+angular-ui/src/environments/version.ts
 
 # Logs
 logs

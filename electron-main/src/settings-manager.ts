@@ -1,4 +1,3 @@
-// electron-main/src/settings-manager.ts
 import Store from 'electron-store';
 import { nativeTheme } from 'electron';
 import {PrimeTheme} from "./types"; // To get system theme info

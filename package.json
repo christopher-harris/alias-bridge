@@ -4,10 +4,11 @@
   "description": "Cross platform terminal alias manager",
   "main": "dist-electron/main.js",
   "scripts": {
+    "version:write": "node ./scripts/write-version.js",
     "ng:build": "cd angular-ui && ng build --configuration production --base-href ./",
     "tsc:electron": "tsc -p electron-main/tsconfig.json",
     "electron:package": "node -r dotenv/config ./node_modules/electron-builder/out/cli/cli.js",
-    "build": "npm run ng:build && npm run tsc:electron && npm run electron:package",
+    "build": "npm run version:write && npm run ng:build && npm run tsc:electron && npm run electron:package",
     "tsc:electron:watch": "tsc -p electron-main/tsconfig.json --watch",
     "ng:serve": "cd angular-ui && ng serve",
     "electron:start:dev": "electron .",
@@ -69,7 +70,7 @@
     "dotenv": "^16.4.7",
     "electron-log": "^5.3.3",
     "electron-squirrel-startup": "^1.0.1",
-    "electron-store": "^10.0.1",
+    "electron-store": "^7.0.3",
     "electron-updater": "^6.6.2",
     "uuid": "^11.1.0"
   }
