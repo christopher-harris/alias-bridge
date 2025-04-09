@@ -19,6 +19,7 @@ import Nora from '@primeng/themes/nora';
 import Material from '@primeng/themes/material';
 import {UpdateService} from './services/update.service';
 import {isDevMode} from '@angular/core';
+import {MessageModule} from 'primeng/message';
 
 interface Alias {
   name: string;
@@ -38,6 +39,7 @@ interface Alias {
     ButtonModule,
     DrawerModule,
     SelectButtonModule,
+    MessageModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -116,6 +118,10 @@ export class AppComponent implements OnInit, OnDestroy {
           detail: `Successfully Removed Alias: ${result.name}`,
         })
       }
+    });
+
+    window.electronAPI.onUpdaterStatus((result: any) => {
+      console.log('UpdaterStatus: ', result);
     });
 
     // // Example: Listen for replies from the main process
@@ -207,9 +213,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   manualCheckForUpdates(): void {
-    if (!isDevMode) {
-      this.updateService.checkUpdates();
-    }
+    this.updateService.checkUpdates();
+    // if (!isDevMode) {
+    //   this.updateService.checkUpdates();
+    // }
   }
 
   restartAndInstall(): void {

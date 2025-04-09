@@ -1,0 +1,11 @@
+# alias-bridge/_dev-app-update.yml
+provider: generic
+# Path to the directory containing your version folders (v1.0.0, v1.1.0, etc.)
+# Use an absolute path or a path relative to the project root.
+# Make sure this points to the PARENT of the version folders.
+#url: file:///Users/chrisharris/WebstormProjects/alias-bridge/local-update-server/
+url: http://localhost:9000/
+# or relative path (might be less reliable depending on execution context)
+# path: ../local-update-server
+channel: latest
+useMultipleRangeRequest: false

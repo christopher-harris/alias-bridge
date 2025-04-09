@@ -35,6 +35,9 @@ async function initializeApp(): Promise<void> {
     // --- Create Tray Icon ---
     createTray(); // Tray should usually be created before the window might be shown
 
+    // --- Log the environment variable ---
+    console.log(`[ENV CHECK] ELECTRON_UPDATER_FORCE_DEV = ${process.env.ELECTRON_UPDATER_FORCE_DEV}`);
+
     // --- Ensure Main Window Exists and Get Reference ---
     // Calls ensureMainWindow() which returns the instance (creating if needed)
     const mainWindow = ensureMainWindow(); // <-- Use the function from window-manager

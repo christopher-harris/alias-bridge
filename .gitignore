@@ -81,3 +81,5 @@ web_modules/
 ehthumbs.db
 Thumbs.db
 /.env
+/local-update-server/*
+/dev.readme.md

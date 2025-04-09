@@ -1,7 +1,7 @@
-// electron-main/src/update-manager.ts
 import {app, BrowserWindow, ipcMain} from 'electron';
 import {autoUpdater, UpdateInfo, ProgressInfo} from 'electron-updater';
-import logger from 'electron-log'; // Optional but highly recommended for debugging
+import logger from 'electron-log';
+import {IS_DEV} from "./config";
 
 // Configure electron-log (optional)
 // Logs will go to standard OS log locations
@@ -59,15 +59,23 @@ export function initAutoUpdater(window: BrowserWindow | null): void {
         // At this point, you should prompt the user in the UI to restart
     });
 
-    // --- Initial Check (Optional, with delay) ---
-    // Consider checking after a delay so it doesn't impact startup
-    // Or only check when the user explicitly clicks a button
-    setTimeout(() => {
-        logger.info('UpdateManager: Triggering initial update check.');
-        // autoUpdater.checkForUpdates(); // Just check
-        autoUpdater.checkForUpdatesAndNotify(); // Checks and shows OS notification (simpler, less UI control)
-        // Choose one of the above or none for manual-only checks
-    }, 10 * 1000); // e.g., check 10 seconds after init
+    if (IS_DEV) {
+        logger.info('UpdateManager: Development mode detected, skipping initial auto-check. Trigger manually.');
+        // autoUpdater.forceDevUpdateConfig = true;
+        // Optionally trigger check immediately for testing:
+        // logger.info('UpdateManager: Development mode detected, triggering immediate check.');
+        // setTimeout(() => autoUpdater.checkForUpdates(), 2000); // Small delay
+    } else {
+        // --- Initial Check (Optional, with delay) ---
+        // Consider checking after a delay so it doesn't impact startup
+        // Or only check when the user explicitly clicks a button
+        setTimeout(() => {
+            logger.info('UpdateManager: Triggering initial update check.');
+            // autoUpdater.checkForUpdates(); // Just check
+            autoUpdater.checkForUpdatesAndNotify(); // Checks and shows OS notification (simpler, less UI control)
+            // Choose one of the above or none for manual-only checks
+        }, 10 * 1000);
+    }
 
 }
 

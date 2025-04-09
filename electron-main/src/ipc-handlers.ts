@@ -10,6 +10,7 @@ import {
     setAppearanceSetting,
     getPrimeThemeSetting, setPrimeThemeSetting
 } from "./settings-manager";
+import {registerUpdateHandlers} from "./ipc";
 
 export function registerAllIpcHandlers(): void {
     console.log('Registering IPC Handlers...');
@@ -249,6 +250,8 @@ export function registerAllIpcHandlers(): void {
             return { success: false, error: error.message };
         }
     });
+
+    registerUpdateHandlers();
 
     console.log('IPC Handlers Registered.');
 }
