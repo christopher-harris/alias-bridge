@@ -62,7 +62,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "Christopher Harris",
+      "owner": "christopher-harris",
       "repo": "https://github.com/christopher-harris/alias-bridge"
     }
   },
