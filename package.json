@@ -46,7 +46,7 @@
       "main": "dist-electron/main.js"
     },
     "mac": {
-      "target": "dmg",
+      "target": ["dmg", "zip"],
       "icon": "assets/build/alias_bridge_icon_dark.icns",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
