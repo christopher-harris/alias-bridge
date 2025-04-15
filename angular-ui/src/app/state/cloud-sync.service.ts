@@ -37,23 +37,21 @@ export class CloudSyncService {
     }, { merge: true }));
   }
 
-  // saveAliasesToFirestore(userId: string, aliases: Alias[]): Observable<void> {
-  //   console.log('saveAliasesToFirestore', userId, aliases);
-  //   const userDocRef = doc(this.firebaseService.db, `users/${userId}`);
-  //   return from(setDoc(userDocRef, { aliases }, { merge: true }));
-  // }
-
-  saveAliasesToFirestore(userId: string): Observable<any> {
-    console.log('saveAliasesToFirestore', userId);
-    return this.store.select(localAliasesFeature.selectLocalAliases).pipe(
-      switchMap(aliases => {
-        console.log(aliases);
-        const userDocRef = doc(this.firebaseService.db, `users/${userId}`);
-        console.log(userDocRef);
-        return from(setDoc(userDocRef, { aliases }, { merge: false }));
-      })
-    );
+  getUserCloudData(uid: string): Observable<CloudData | null> {
+    return from(this.firebaseService.getUserCloudData(uid));
   }
+
+  // saveAliasesToFirestore(userId: string): Observable<any> {
+  //   console.log('saveAliasesToFirestore', userId);
+  //   return this.store.select(localAliasesFeature.selectLocalAliases).pipe(
+  //     switchMap(aliases => {
+  //       console.log(aliases);
+  //       const userDocRef = doc(this.firebaseService.db, `users/${userId}`);
+  //       console.log(userDocRef);
+  //       return from(setDoc(userDocRef, { aliases }, { merge: false }));
+  //     })
+  //   );
+  // }
 
   async loadUserDataFromFirestore(): Promise<CloudData | null> {
     const userID = await this.getUserIdFromStore();

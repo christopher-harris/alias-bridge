@@ -25,8 +25,18 @@ import {
 import {cloudDataFeature, selectAppUser} from './cloud-data.reducer';
 import {CloudData} from '../../models/cloud-data.model';
 import {AppUser} from '../../models/app-user.model';
-import {localSettingsFeature} from '../local-settings/local-settings.reducer';
+import {localSettingsFeature, selectLocalSettings} from '../local-settings/local-settings.reducer';
 import {LocalSettingsActions} from '../local-settings/local-settings.actions';
+import {Alias} from '../../electron';
+
+function getLatestTimestamp(aliases: Alias[]): number {
+  return aliases.reduce((max, alias) => {
+    const ts = typeof alias.lastUpdated === 'string' || alias.lastUpdated instanceof Date
+      ? new Date(alias.lastUpdated).getTime()
+      : alias.lastUpdated || 0;
+    return Math.max(max, ts);
+  }, 0);
+}
 
 
 @Injectable()
@@ -72,22 +82,87 @@ export class CloudDataEffects {
     )
   );
 
-  loadCloudDataOnStartup$ = createEffect(() =>
+  loadAndSyncCloudData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(CloudDataActions.userLoggedInSuccess),
-      switchMap(() =>
-        combineLatest([
-          this.store.select(localAliasesFeature.selectAll).pipe(take(1)),
-          this.store.select(localSettingsFeature.selectCurrentAppearance).pipe(take(1)),
-          this.store.select(localSettingsFeature.selectCurrentTheme).pipe(take(1)),
-        ])
-      ),
-      switchMap(([aliases, appearance, theme]) => [
-        CloudDataActions.updateAliases({ data: aliases }),
-        CloudDataActions.updateSettings({ data: { appearance, theme } })
-      ])
+      switchMap(({ data: user }) =>
+        this.cloudSyncService.getUserCloudData(user.uid).pipe(
+          withLatestFrom(
+            this.store.select(localAliasesFeature.selectAll),
+            this.store.select(selectLocalSettings)
+          ),
+          filter(([cloudData]) => !!cloudData),
+          switchMap(([cloudData, localAliases, localSettings]) => {
+            const latestCloud = getLatestTimestamp(cloudData!.aliases);
+            const latestLocal = getLatestTimestamp(localAliases);
+
+            if (latestCloud >= latestLocal) {
+              // Cloud wins → hydrate local store
+              return [
+                LocalAliasesActions.addLocalAliases({ aliases: cloudData!.aliases }),
+                LocalSettingsActions.updateAppearance({ appearance: cloudData!.settings.appearance }),
+                LocalSettingsActions.updateTheme({ theme: cloudData!.settings.theme }),
+                CloudDataActions.userCloudDataLoaded({ data: cloudData! })
+              ];
+            } else {
+              // Local wins → push to Firestore
+              return [
+                CloudDataActions.userCloudDataLoaded({ data: {
+                  uid: user.uid,
+                    aliases: localAliases,
+                    settings: localSettings
+                  }}),
+                CloudDataActions.updateAliases({ data: localAliases }),
+                CloudDataActions.updateSettings({ data: localSettings })
+              ];
+            }
+          }),
+          catchError(error =>
+            of(CloudDataActions.userCloudDataFetchFailed({ error }))
+          )
+        )
+      )
     )
   );
+
+
+  // loadCloudData$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(CloudDataActions.userLoggedInSuccess),
+  //     switchMap(({ data }) =>
+  //       this.cloudSyncService.getUserCloudData(data.uid).pipe(
+  //         map((cloudData) => {
+  //           if (cloudData) {
+  //             return CloudDataActions.userCloudDataLoaded({ data: cloudData });
+  //           } else {
+  //             return CloudDataActions.userCloudDataFetchFailed({ error: 'No cloud data found.' });
+  //           }
+  //         }),
+  //         catchError((error) =>
+  //           of(CloudDataActions.userCloudDataFetchFailed({ error }))
+  //         )
+  //       )
+  //     )
+  //   )
+  // );
+
+
+  // loadCloudDataOnStartup$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(CloudDataActions.userLoggedInSuccess),
+  //     switchMap(() =>
+  //       combineLatest([
+  //         this.store.select(localAliasesFeature.selectAll).pipe(take(1)),
+  //         this.store.select(localSettingsFeature.selectCurrentAppearance).pipe(take(1)),
+  //         this.store.select(localSettingsFeature.selectCurrentTheme).pipe(take(1)),
+  //       ])
+  //     ),
+  //     switchMap(([aliases, appearance, theme]) => [
+  //       CloudDataActions.updateAliases({ data: aliases }),
+  //       CloudDataActions.updateSettings({ data: { appearance, theme } })
+  //     ])
+  //   )
+  // );
 
   syncCloudDataToFirestore$ = createEffect(() =>
     this.actions$.pipe(

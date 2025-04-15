@@ -32,3 +32,11 @@ export const localSettingsFeature = createFeature({
   })
 });
 
+export const selectLocalSettings = createSelector(
+  localSettingsFeature.selectCurrentAppearance,
+  localSettingsFeature.selectCurrentTheme,
+  (appearance, theme) => ({
+    appearance,
+    theme
+  })
+);
