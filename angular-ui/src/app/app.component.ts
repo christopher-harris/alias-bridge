@@ -7,19 +7,25 @@ import {ToastModule} from 'primeng/toast';
 import {MessageService} from 'primeng/api';
 import {ToolbarModule} from 'primeng/toolbar';
 import {ButtonModule} from 'primeng/button';
-import {AppearanceService} from './services/appearance.service';
-import {AppearanceSetting, PrimeTheme, UpdateStatus} from './electron';
+import {PrimeTheme, UpdateStatus} from './electron';
 import {DrawerModule} from 'primeng/drawer';
 import {SelectButtonChangeEvent, SelectButtonModule} from 'primeng/selectbutton';
-import {UiThemeService} from './services/ui-theme.service';
 import {usePreset} from '@primeng/themes';
 import Aura from '@primeng/themes/aura';
 import Lara from '@primeng/themes/lara';
 import Nora from '@primeng/themes/nora';
 import Material from '@primeng/themes/material';
 import {UpdateService} from './services/update.service';
-import {isDevMode} from '@angular/core';
 import {MessageModule} from 'primeng/message';
+import {SettingsService} from './services/settings.service';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {Store} from '@ngrx/store';
+import {LocalSettingsActions} from './state/local-settings/local-settings.actions';
+import {localSettingsFeature} from './state/local-settings/local-settings.reducer';
+import {CloudDataActions} from './state/cloud-data/cloud-data.actions';
+import {UpdateStatusComponent} from './components/update-status/update-status.component';
+import {AuthService} from './services/auth.service';
+import {cloudDataFeature} from './state/cloud-data/cloud-data.reducer';
 
 interface Alias {
   name: string;
@@ -40,6 +46,7 @@ interface Alias {
     DrawerModule,
     SelectButtonModule,
     MessageModule,
+    UpdateStatusComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -48,45 +55,36 @@ interface Alias {
   ]
 })
 export class AppComponent implements OnInit, OnDestroy {
+  store = inject(Store);
   aliasService = inject(AliasService);
-  uiThemeService = inject(UiThemeService);
   messageService = inject(MessageService);
-  appearanceService = inject(AppearanceService);
   updateService = inject(UpdateService);
-  currentAppearanceSetting: Signal<AppearanceSetting> = this.appearanceService.appearanceSetting;
-  activeAppearance = this.appearanceService.activeAppearance;
-  appearanceToggleIcon = computed(() => this.activeAppearance() === 'dark' ? 'pi pi-sun' : 'pi pi-moon');
-  settingsDrawerVisible = signal<boolean>(false);
-  availableAppearanceOptions = this.appearanceService.availableAppearanceSettings;
-  availableThemeOptions = this.uiThemeService.availablePrimeThemes;
-  currentPrimeTheme = this.uiThemeService.primeTheme;
+  settingsService = inject(SettingsService);
+  authService = inject(AuthService);
 
-  aliases: Signal<Alias[]> = this.aliasService.aliases;
-  loading: Signal<boolean> = this.aliasService.loading;
-  aliasCount = computed(() => this.aliases().length);
-  successMessage = this.aliasService.successMessage();
+  settingsDrawerVisible = signal<boolean>(false);
+  availableAppearanceOptions = this.settingsService.availableAppearanceSettings;
+  availableThemeOptions = this.settingsService.availablePrimeThemes;
+  currentPrimeTheme = toSignal(this.store.select(localSettingsFeature.selectCurrentTheme));
+  currentAppearance = toSignal(this.store.select(localSettingsFeature.selectCurrentAppearance));
+  appearanceToggleIcon = computed(() => this.currentAppearance() === 'dark' ? 'pi pi-sun' : 'pi pi-moon');
 
   updateStatus: Signal<UpdateStatus>;
   isUpdateReady: Signal<boolean>;
 
-  isDevMode = isDevMode();
-
   title = 'AliasBridge UI';
-  messageFromMain = 'No reply yet.';
 
   addStatusMessage = '';
 
   // Inject ChangeDetectorRef to manually trigger UI updates if needed after IPC calls
   constructor(private cdr: ChangeDetectorRef) {
+    this.store.dispatch(LocalSettingsActions.loadLocalSettings());
     effect(() => {
-      console.log(this.activeAppearance());
-      this.setPrimeTheme(this.currentPrimeTheme());
-      if (this.successMessage) {
-        console.log(this.successMessage);
-      }
+      this.setPrimeTheme(this.currentPrimeTheme()!);
     });
     this.updateStatus = this.updateService.updateStatus;
     this.isUpdateReady = this.updateService.isUpdateReady;
+    this.store.select(cloudDataFeature.selectAppUser).subscribe(x => console.log(x));
   }
 
   async loadAliases(): Promise<void> {
@@ -95,8 +93,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<any> {
     console.log('AppComponent initialized.');
-
-    await this.aliasService.loadAliases();
 
     window.electronAPI.onAddAliasReply((result: any) => {
       console.log('Add Alias Reply:', result);
@@ -163,7 +159,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   setPrimeTheme(theme: PrimeTheme) {
-    console.log(theme);
+    // console.log(theme);
     switch (theme) {
       case 'aura':
         usePreset(Aura);
@@ -183,19 +179,12 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  sendMessageToMain(): void {
-    const message = 'Hello from Angular!';
-    console.log('Sending message to main:', message);
-    // Use the exposed API from preload-scripts.entry.ts
-    window.electronAPI?.sendMessage(message);
-  }
-
   handleAppearanceClicked() {
     // console.log(this.activeAppearance());
-    if (this.activeAppearance() === 'dark') {
-      this.appearanceService.setAppearancePreference('light');
+    if (this.currentAppearance() === 'dark') {
+      this.settingsService.setAppearancePreference('light');
     } else {
-      this.appearanceService.setAppearancePreference('dark');
+      this.settingsService.setAppearancePreference('dark');
     }
   }
 
@@ -204,11 +193,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   handleAppearanceChanged(event: SelectButtonChangeEvent) {
-    this.appearanceService.setAppearancePreference(event.value);
+    this.settingsService.setAppearancePreference(event.value);
   }
 
   handleThemeChanged(event: SelectButtonChangeEvent) {
-    this.uiThemeService.setPrimeThemePreference(event.value);
+    this.store.dispatch(LocalSettingsActions.updateTheme({ theme: event.value }));
+    this.settingsService.setPrimeThemePreference(event.value);
     this.setPrimeTheme(event.value);
   }
 
@@ -221,6 +211,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   restartAndInstall(): void {
     this.updateService.installUpdate();
+  }
+
+  handleUserClickedGithubLogin() {
+    // this.store.dispatch(CloudDataActions.loginUser());
+    this.authService.signInWithGitHub();
   }
 
 }

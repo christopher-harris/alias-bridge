@@ -1,31 +1,17 @@
 import {computed, effect, inject, Injectable, NgZone, OnDestroy, Signal, signal, WritableSignal} from '@angular/core';
 import {Alias, NewAlias} from '../electron';
 import {Router} from '@angular/router';
+import {LocalAliasesRepository} from '../state/local-aliases.repository';
+import {Store} from '@ngrx/store';
+import {LocalAliasesActions} from '../state/local-aliases/local-aliases.actions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AliasService implements OnDestroy {
+  store = inject(Store);
   router = inject(Router);
-
-  // --- State Signals ---
-  // Private writable signals for internal state management
-  private aliasesState: WritableSignal<Alias[]> = signal<Alias[]>([]);
-  private loadingState: WritableSignal<boolean> = signal<boolean>(false);
-  private errorState: WritableSignal<string | null> = signal<string | null>(null);
-  private currentOS: WritableSignal<string> = signal<string>('unknown');
-  private successState: WritableSignal<any | null> = signal<any | null>(null);
-
-  // --- Public Read-only Signals for Consumption ---
-  // Expose state immutably to components
-  public readonly aliases: Signal<Alias[]> = this.aliasesState.asReadonly();
-  public readonly loading: Signal<boolean> = this.loadingState.asReadonly();
-  public readonly error: Signal<string | null> = this.errorState.asReadonly();
-  public readonly operatingSystem: Signal<string> = this.currentOS.asReadonly();
-  public readonly successMessage: Signal<string | null> = this.successState.asReadonly();
-
-  // --- Optional Computed Signal ---
-  public readonly aliasCount: Signal<number> = computed(() => this.aliasesState().length);
+  localAliasesStore = inject(LocalAliasesRepository);
 
   constructor(private ngZone: NgZone) {
     this.setupListeners();
@@ -47,7 +33,7 @@ export class AliasService implements OnDestroy {
   }
 
   private async checkOS(): Promise<void> {
-    this.currentOS.set(await window.electronAPI.getOSPlatform() || 'unknown');
+    // this.currentOS.set(await window.electronAPI.getOSPlatform() || 'unknown');
   }
 
   private setupListeners(): void {
@@ -66,13 +52,12 @@ export class AliasService implements OnDestroy {
         if (result.success) {
           // Reload the list after successful add
           this.loadAliases(); // Re-fetch to update state signal
-          this.router.navigate(['/']);
-          this.successState.set(`Alias ${result.name} added successfully!`);
+          console.log(result);
+          this.store.dispatch(LocalAliasesActions.addLocalAlias({alias: (result as any).alias}));
+          // this.router.navigate(['/']);
+          // this.successState.set(`Alias ${result.name} added successfully!`);
         } else {
-          // Update the error signal
-          this.errorState.set(`Failed to add alias '${result.name}': ${result.error || 'Unknown error'}`);
-          // Optionally clear the error after some time
-          setTimeout(() => this.errorState.set(null), 5000);
+          this.store.dispatch(LocalAliasesActions.addLocalAliasFailed({ error: 'Could not create local alias!' }));
         }
       });
     };
@@ -82,19 +67,10 @@ export class AliasService implements OnDestroy {
     window.electronAPI.onDeleteAliasReply((result) => {
       this.ngZone.run(() => {
         if (result.success) {
-          // --- SET SUCCESS MESSAGE ---
-          const message = `Alias '${result.name || 'ID: ' + result.id}' deleted successfully!`;
-          // console.log(message);
-          this.successState.set(message);
-          // ---
-
-          this.loadAliases();
-
-          // --- Clear message after a delay ---
-          setTimeout(() => this.successState.set(null), 3000); // Clear after 3 seconds
+          console.log(result);
+          this.store.dispatch(LocalAliasesActions.localAliasDeleted({ id: result.id }));
         } else {
           this.handleError('delete', result.name || `ID: ${result.id}`, result.error);
-          this.successState.set(null);
         }
       });
     });
@@ -108,24 +84,17 @@ export class AliasService implements OnDestroy {
     // console.log('AliasService: Requesting aliases (for Signals)...');
     if (!window.electronAPI) {
       console.error('AliasService: Electron API is not available.');
-      this.errorState.set('Electron API is not available.');
       return;
     }
 
-    this.loadingState.set(true);
-    this.errorState.set(null); // Clear previous errors
-
     try {
       const fetchedAliases = await window.electronAPI.getAliases();
-      // console.log('AliasService: Aliases received (for Signals):', fetchedAliases);
-      // Update the state signal
-      this.aliasesState.set(fetchedAliases || []);
+      this.store.dispatch(LocalAliasesActions.addLocalAliases({aliases: fetchedAliases}));
     } catch (error: any) {
       console.error('AliasService: Error loading aliases:', error);
-      this.errorState.set(`Failed to load aliases: ${error.message || error}`);
-      this.aliasesState.set([]); // Clear aliases on error
+      this.store.dispatch(LocalAliasesActions.loadLocalAliasesFailed({ error }));
     } finally {
-      this.loadingState.set(false);
+      // this.loadingState.set(false);
     }
   }
 
@@ -133,14 +102,11 @@ export class AliasService implements OnDestroy {
    * Sends a request to the Electron main process to add a new alias.
    */
   addAlias(alias: NewAlias): void {
-    // console.log('AliasService: Requesting to add alias (for Signals):', alias);
+    console.log('AliasService: Requesting to add alias:', alias);
     if (!window.electronAPI) {
       console.error('AliasService: Electron API is not available.');
-      this.errorState.set('Electron API is not available.');
       return;
     }
-
-    this.errorState.set(null); // Clear previous errors
 
     // Send the request - response handled by the listener
     window.electronAPI.addAlias(alias);
@@ -162,8 +128,6 @@ export class AliasService implements OnDestroy {
       return;
     }
 
-    this.errorState.set(null); // Clear previous errors
-    this.successState.set(null); // Clear success message
     window.electronAPI.updateAlias(id, alias); // Pass ID and the full updated object
     // Response handled by onUpdateAliasReply listener
   }
@@ -175,8 +139,6 @@ export class AliasService implements OnDestroy {
       this.handleError('delete', `ID: ${id}`, 'Electron API not available'); // Update name placeholder
       return;
     }
-    this.errorState.set(null);
-    this.successState.set(null); // Clear success message
     window.electronAPI.deleteAlias(id);
     // Response handled by onDeleteAliasReply listener
   }
@@ -184,15 +146,11 @@ export class AliasService implements OnDestroy {
   // Helper for error handling (ensure name parameter allows null)
   private handleError(action: string, identifier: string | null, errorMsg?: string): void {
     const message = `Failed to ${action} alias${identifier ? " '" + identifier + "'" : ''}: ${errorMsg || 'Unknown error'}`;
-    this.errorState.set(message);
-    setTimeout(() => this.errorState.set(null), 5000);
   }
 
   // --- Add success message handling if using successState signal ---
   private handleSuccess(action: string, identifier: string | null): void {
     const message = `Alias${identifier ? " '" + identifier + "'" : ''} ${action}d successfully!`;
-    this.successState.set(message);
-    setTimeout(() => this.successState.set(null), 3000); // Clear message after 3s
   }
 
 }

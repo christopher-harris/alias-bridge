@@ -3,6 +3,8 @@ interface Alias {
   name: string;
   command: string;
   comment?: string;
+  created?: Date;
+  lastUpdated?: Date;
 }
 
 export type NewAlias = Omit<Alias, 'id'>;

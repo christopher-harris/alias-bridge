@@ -35,7 +35,9 @@ export function registerAliasHandlers(): void {
             // Generate new UUID and create the Alias object
             const IncomingAliasData: Alias = {
                 ...receivedAliasData,
-                id: uuidv4()
+                id: uuidv4(),
+                created: new Date(),
+                lastUpdated: new Date(),
             };
 
             // Add new alias to the list
@@ -98,7 +100,7 @@ export function registerAliasHandlers(): void {
 
             // --- Update the Alias ---
             // Replace the old alias object at the found index with the updated data
-            currentAliases[indexToUpdate] = updatedAliasData;
+            currentAliases[indexToUpdate] = {...updatedAliasData, lastUpdated: new Date()};
 
             // Save the modified list back to JSON
             await saveAliasData(currentAliases);

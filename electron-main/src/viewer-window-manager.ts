@@ -9,8 +9,8 @@ import { IS_DEV } from './config'; // Assuming you have IS_DEV in config.ts
 let viewerWindow: BrowserWindow | null = null;
 
 // Define constants for the viewer window size
-const WINDOW_WIDTH = 380;
-const WINDOW_HEIGHT = 450;
+const WINDOW_WIDTH = 1024;
+const WINDOW_HEIGHT = 768;
 
 /**
  * Calculates the position for the viewer window near the tray icon.

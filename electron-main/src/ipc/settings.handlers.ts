@@ -55,14 +55,14 @@ export function registerSettingsHandlers(): void {
     /**
      * Provides the selected Prime Theme
      */
-    ipcMain.handle('theme:get-current-prime-theme', (): PrimeTheme => {
+    ipcMain.handle('settings:get-current-prime-theme', (): PrimeTheme => {
         return getPrimeThemeSetting();
     });
 
     /**
      * Sets Prime Theme
      */
-    ipcMain.handle('theme:set-prime-theme', (event, theme: PrimeTheme): any => {
+    ipcMain.handle('settings:set-prime-theme', (event, theme: PrimeTheme): any => {
         try {
             setPrimeThemeSetting(theme);
             const window = BrowserWindow.fromWebContents(event.sender);
