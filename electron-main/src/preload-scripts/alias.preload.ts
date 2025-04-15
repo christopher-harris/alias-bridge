@@ -9,7 +9,7 @@ export interface AliasApi {
 
     // --- Update takes ID and the full updated Alias object ---
     updateAlias: (id: string, alias: Alias) => void;
-    onUpdateAliasReply: (callback: (result: { success: boolean; id: string; name: string; error?: string }) => void) => void;
+    onUpdateAliasReply: (callback: (result: { success: boolean; id: string; name: string; alias: Alias; error?: string }) => void) => void;
 
     // --- Delete takes ID ---
     deleteAlias: (id: string) => void;

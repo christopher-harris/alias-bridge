@@ -110,5 +110,10 @@
         }
       }
     }
+  },
+  "cli": {
+    "schematicCollections": [
+      "@ngrx/schematics"
+    ]
   }
 }

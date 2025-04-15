@@ -1,7 +1,8 @@
 import { BrowserWindow, app, Event } from 'electron'; // Added Event type
 import path from 'path';
 import url from 'url';
-import { IS_DEV } from './config'; // Use IS_DEV from config
+import { IS_DEV } from './config';
+import installExtension, {REDUX_DEVTOOLS} from "electron-devtools-installer"; // Use IS_DEV from config
 
 // Module-level variable to hold the main window instance
 let mainWindow: BrowserWindow | null = null;
@@ -80,6 +81,7 @@ function createWindowInternal(): BrowserWindow {
         console.log('Loading main window URL (Dev): http://localhost:4200');
         newWindow.loadURL('http://localhost:4200'); // Assumes main app is at root route
         newWindow.webContents.openDevTools(); // Open DevTools in dev
+        installExtension(REDUX_DEVTOOLS);
     } else {
         const appRootPath = app.getAppPath();
         const indexPath = path.join(appRootPath, 'dist/alias-bridge-ui/browser/index.html');

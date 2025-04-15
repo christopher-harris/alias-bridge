@@ -1,0 +1,25 @@
+@switch (updateStatus().status) {
+  @case ('checking') {
+    <p-message severity="info" [text]="updateStatus().message"/>
+  }
+  @case ('available') {
+    <p-message severity="success" [text]="updateStatus().message"/>
+  }
+  @case ('not-available') {
+    @if (updateStatus().message === "Ready") {
+      <p-button class="w-full" styleClass="w-full" [label]="'Check for Updates'"
+                (onClick)="manualCheckForUpdates()"/>
+    } @else {
+      <p-message size="small" severity="info" [text]="updateStatus().message"/>
+    }
+  }
+  @case ('downloading') {
+    <p-message severity="warn" [text]="updateStatus().message"/>
+  }
+  @case ('downloaded') {
+    <p-message severity="success" [text]="updateStatus().message"/>
+  }
+  @case ('error') {
+    <p-message severity="error" [text]="updateStatus().message"/>
+  }
+}

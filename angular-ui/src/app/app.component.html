@@ -1,20 +1,4 @@
-<p-toolbar styleClass="bg-gradient-to-t from-slate-50">
-  <ng-template #start>
-    @if (activeAppearance() === 'dark') {
-      <img src="assets/alias_bridge_icon_light.png" alt="aliasBridge icon" width="32" height="32"/>
-    } @else {
-      <img src="assets/alias_bridge_icon_dark.png" alt="aliasBridge icon" width="32" height="32"/>
-    }
-    <p class="ml-4">AliasBridge</p>
-  </ng-template>
-  <ng-template #end>
-    <p-button type="button" [icon]="'pi pi-cog'" text size="small" (onClick)="handleSettingsClicked()"/>
-    <p-button type="button" [icon]="appearanceToggleIcon()" text [size]="'small'"
-              (onClick)="handleAppearanceClicked()"/>
-    <p-button type="button" icon="pi pi-refresh" severity="secondary" rounded text (onClick)="loadAliases()"
-              [size]="'small'"/>
-  </ng-template>
-</p-toolbar>
+<app-header (settingsClicked)="handleSettingsClicked()"></app-header>
 
 <div class="p-4 mt-6">
 
@@ -32,7 +16,7 @@
     <div class="flex-grow space-y-12">
       <div>
         <label>Appearance: </label>
-        <p-selectButton [options]="availableAppearanceOptions" [ngModel]="activeAppearance()"
+        <p-selectButton [options]="availableAppearanceOptions" [ngModel]="currentAppearance()"
                         (onChange)="handleAppearanceChanged($event)" size="small"/>
       </div>
 
@@ -43,30 +27,12 @@
       </div>
     </div>
 
-    @switch (updateStatus().status) {
-      @case ('checking') {
-        <p-message severity="info" [text]="updateStatus().message"/>
-      }
-      @case ('available') {
-        <p-message severity="success" [text]="updateStatus().message"/>
-      }
-      @case ('not-available') {
-        @if (updateStatus().message === "Ready") {
-          <p-button class="w-full" styleClass="w-full" [label]="'Check for Updates'"
-                    (onClick)="manualCheckForUpdates()"/>
-        } @else {
-          <p-message size="small" severity="info" [text]="updateStatus().message"/>
-        }
-      }
-      @case ('downloading') {
-        <p-message severity="warn" [text]="updateStatus().message"/>
-      }
-      @case ('downloaded') {
-        <p-message severity="success" [text]="updateStatus().message"/>
-      }
-      @case ('error') {
-        <p-message severity="error" [text]="updateStatus().message"/>
-      }
+    @if ((appUser$ | async)) {
+      <p>Connected as {{(appUser$ | async)?.displayName}}</p>
+      <p-button [label]="'Logout'" styleClass="w-full" (onClick)="logOut()" />
+    } @else {
+      <p-button [label]="'Login with GitHub'" [icon]="'pi pi-github'" styleClass="w-full" (onClick)="handleUserClickedGithubLogin()" />
     }
+    <app-update-status [updateStatus]="updateStatus()" />
   </div>
 </p-drawer>

@@ -35,7 +35,9 @@ export function registerAliasHandlers(): void {
             // Generate new UUID and create the Alias object
             const IncomingAliasData: Alias = {
                 ...receivedAliasData,
-                id: uuidv4()
+                id: uuidv4(),
+                created: new Date(),
+                lastUpdated: new Date(),
             };
 
             // Add new alias to the list
@@ -61,13 +63,20 @@ export function registerAliasHandlers(): void {
         console.log(`IPC: Handling update-alias for ID '${idToUpdate}' with data:`, updatedAliasData);
         let currentAliases: Alias[] = [];
 
+        updatedAliasData = {
+            ...updatedAliasData,
+            lastUpdated: new Date(),
+        };
+
+        console.log(updatedAliasData);
+
         // Basic validation: Ensure the ID in the data object matches the ID parameter
         if (idToUpdate !== updatedAliasData.id) {
             console.error(`Error processing update-alias: ID mismatch. Param ID: ${idToUpdate}, Object ID: ${updatedAliasData.id}`);
             event.reply('update-alias-reply', {
                 success: false,
                 id: idToUpdate,
-                name: updatedAliasData.name, // Use the potentially new name for context
+                name: updatedAliasData.name,
                 error: 'Internal error: Alias ID mismatch.'
             });
             return; // Stop processing
@@ -98,7 +107,7 @@ export function registerAliasHandlers(): void {
 
             // --- Update the Alias ---
             // Replace the old alias object at the found index with the updated data
-            currentAliases[indexToUpdate] = updatedAliasData;
+            currentAliases[indexToUpdate] = {...updatedAliasData, lastUpdated: new Date()};
 
             // Save the modified list back to JSON
             await saveAliasData(currentAliases);
@@ -108,7 +117,7 @@ export function registerAliasHandlers(): void {
 
             console.log(`Alias (ID: ${idToUpdate}) updated successfully to name '${updatedAliasData.name}'.`);
             // Reply with success, include the ID and the (potentially new) name
-            event.reply('update-alias-reply', { success: true, id: idToUpdate, name: updatedAliasData.name });
+            event.reply('update-alias-reply', { success: true, id: idToUpdate, name: updatedAliasData.name, alias: updatedAliasData });
 
         } catch (error: any) {
             console.error("Error processing update-alias:", error);

@@ -8,6 +8,8 @@ import {Router, RouterModule} from '@angular/router';
 import {AliasService} from '../../services/alias.service';
 import {Alias, NewAlias} from '../../electron';
 import {CardModule} from 'primeng/card';
+import {Store} from '@ngrx/store';
+import {LocalAliasesActions} from '../../state/local-aliases/local-aliases.actions';
 
 @Component({
   selector: 'app-add-alias',
@@ -27,6 +29,7 @@ import {CardModule} from 'primeng/card';
 export class AddAliasComponent {
   router = inject(Router);
   aliasService = inject(AliasService);
+  store = inject(Store);
 
   aliasForm: FormGroup = new FormGroup({
     aliasName: new FormControl(''),
@@ -48,7 +51,8 @@ export class AddAliasComponent {
       comment: this.aliasForm.get('aliasComment')?.value,
     };
     console.log('Sending add alias request:', newAlias);
-    this.aliasService.addAlias(newAlias);
+    this.store.dispatch(LocalAliasesActions.userCreatedAlias({alias: newAlias}));
+    // this.aliasService.addAlias(newAlias);
   }
 
 }

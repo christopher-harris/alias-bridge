@@ -3,6 +3,8 @@ interface Alias {
   name: string;
   command: string;
   comment?: string;
+  created?: Date;
+  lastUpdated?: Date;
 }
 
 export type NewAlias = Omit<Alias, 'id'>;
@@ -29,7 +31,7 @@ export interface IElectronAPI {
 
   // --- Update uses ID and full Alias object ---
   updateAlias: (id: string, alias: Alias) => void;
-  onUpdateAliasReply: (callback: (result: { success: boolean; id: string; name: string; error?: string }) => void) => void;
+  onUpdateAliasReply: (callback: (result: { success: boolean; id: string; name: string; alias: Alias; error?: string }) => void) => void;
 
   // --- Delete uses ID ---
   deleteAlias: (id: string) => void;
