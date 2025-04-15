@@ -50,11 +50,25 @@ export const reducer = createReducer(
   }),
   on(CloudDataActions.updateAliases, (state, action) => {
     console.log(action.data);
-    return adapter.setAll(action.data, {...state, syncing: false});
+    return adapter.setAll(action.data, {...state, syncing: true});
   }),
   on(CloudDataActions.updateSettings, (state, action) => ({
     ...state,
     settings: action.data,
+    syncing: true,
+  })),
+  on(CloudDataActions.saveCloudAliasesSuccess, (state, action) => ({
+    ...state,
+    syncing: false,
+  })),
+  on(CloudDataActions.saveCloudAliasesFailure, (state, action) => ({
+    ...state,
+    syncing: false,
+    error: action.error,
+  })),
+  on(CloudDataActions.userLoggedOut, (state, action) => ({
+    ...state,
+    appUser: null,
   }))
 );
 

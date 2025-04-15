@@ -64,6 +64,24 @@ export class AliasService implements OnDestroy {
 
     window.electronAPI.onAddAliasReply(handleAddAliasReply);
 
+    window.electronAPI.onUpdateAliasReply((result) => {
+      this.ngZone.run(() => {
+        console.log(result);
+        if (result.success) {
+          this.store.dispatch(LocalAliasesActions.updateLocalAlias({
+            alias: {
+              id: result.id,
+              changes: {
+                ...result.alias
+              }
+            }
+          }));
+        } else {
+
+        }
+      });
+    });
+
     window.electronAPI.onDeleteAliasReply((result) => {
       this.ngZone.run(() => {
         if (result.success) {

@@ -7,7 +7,7 @@ import {Alias} from '../electron';
 import {RouterModule} from '@angular/router';
 import {TableModule} from 'primeng/table';
 import {InputTextModule} from 'primeng/inputtext';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {SetupInfoComponent} from '../components/setup-info/setup-info.component';
 import {LocalAliasesRepository} from '../state/local-aliases.repository';
 import {Store} from '@ngrx/store';
@@ -42,6 +42,14 @@ export class DashboardComponent {
   }
 
   currentlyEditingAliasOriginal = signal<Alias | null>(null);
+  currentlyEditingAliasForm: FormGroup = new FormGroup({
+    id: new FormControl(''),
+    name: new FormControl(''),
+    command: new FormControl(''),
+    comment: new FormControl(''),
+    created: new FormControl(''),
+    lastUpdated: new FormControl(''),
+  });
 
   async loadAliases(): Promise<void> {
     // await this.aliasService.loadAliases();
@@ -49,19 +57,22 @@ export class DashboardComponent {
   }
 
   onRowEditInit(alias: Alias) {
-    console.log(alias);
+    this.currentlyEditingAliasForm.patchValue(alias);
     this.currentlyEditingAliasOriginal.set(alias);
   }
 
-  onRowEditSave(alias: Alias) {
-    console.log(alias);
-    this.aliasService.updateAlias(alias.id, alias);
-    // this.store.dispatch(LocalAliasesActions.updateLocalAlias({ alias }));
-    this.currentlyEditingAliasOriginal.set(null);
+  onRowEditSave() {
+    console.log(this.currentlyEditingAliasForm.value);
+    if (this.currentlyEditingAliasForm.valid) {
+      this.aliasService.updateAlias(this.currentlyEditingAliasForm.value.id, this.currentlyEditingAliasForm.value);
+      this.currentlyEditingAliasForm.reset();
+      this.currentlyEditingAliasOriginal.set(null);
+    }
   }
 
   onRowCancelEdit(alias: Alias) {
     console.log(alias);
+    this.currentlyEditingAliasForm.reset();
     this.currentlyEditingAliasOriginal.set(null);
     this.loadAliases();
   }

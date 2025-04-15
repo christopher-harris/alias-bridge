@@ -47,7 +47,7 @@ export class CloudDataEffects {
 
   updateCloudDataOnAliasChange$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(LocalAliasesActions.addLocalAlias, LocalAliasesActions.localAliasDeleted),
+      ofType(LocalAliasesActions.addLocalAlias, LocalAliasesActions.localAliasDeleted, LocalAliasesActions.updateLocalAlias),
       withLatestFrom(this.store.select(cloudDataFeature.selectAppUser)),
       filter(([_, user]) => !!user?.uid),
       switchMap(() => this.store.select(localAliasesFeature.selectAll).pipe(take(1))),

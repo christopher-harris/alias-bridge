@@ -19,6 +19,7 @@ export const CloudDataActions = createActionGroup({
         appearance: AppearanceSetting;
         theme: PrimeTheme;
       }
-    }>()
+    }>(),
+    'User Logged Out': emptyProps(),
   }
 });

@@ -26,6 +26,9 @@ import {CloudDataActions} from './state/cloud-data/cloud-data.actions';
 import {UpdateStatusComponent} from './components/update-status/update-status.component';
 import {AuthService} from './services/auth.service';
 import {cloudDataFeature} from './state/cloud-data/cloud-data.reducer';
+import {HeaderComponent} from './components/header/header.component';
+import {Observable} from 'rxjs';
+import {AppUser} from './models/app-user.model';
 
 interface Alias {
   name: string;
@@ -47,6 +50,7 @@ interface Alias {
     SelectButtonModule,
     MessageModule,
     UpdateStatusComponent,
+    HeaderComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -56,18 +60,18 @@ interface Alias {
 })
 export class AppComponent implements OnInit, OnDestroy {
   store = inject(Store);
-  aliasService = inject(AliasService);
   messageService = inject(MessageService);
   updateService = inject(UpdateService);
   settingsService = inject(SettingsService);
   authService = inject(AuthService);
+
+  appUser$: Observable<AppUser | null> = this.store.select(cloudDataFeature.selectAppUser);
 
   settingsDrawerVisible = signal<boolean>(false);
   availableAppearanceOptions = this.settingsService.availableAppearanceSettings;
   availableThemeOptions = this.settingsService.availablePrimeThemes;
   currentPrimeTheme = toSignal(this.store.select(localSettingsFeature.selectCurrentTheme));
   currentAppearance = toSignal(this.store.select(localSettingsFeature.selectCurrentAppearance));
-  appearanceToggleIcon = computed(() => this.currentAppearance() === 'dark' ? 'pi pi-sun' : 'pi pi-moon');
 
   updateStatus: Signal<UpdateStatus>;
   isUpdateReady: Signal<boolean>;
@@ -84,16 +88,10 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.updateStatus = this.updateService.updateStatus;
     this.isUpdateReady = this.updateService.isUpdateReady;
-    this.store.select(cloudDataFeature.selectAppUser).subscribe(x => console.log(x));
-  }
-
-  async loadAliases(): Promise<void> {
-    await this.aliasService.loadAliases();
+    // this.store.select(cloudDataFeature.selectAppUser).subscribe(x => console.log(x));
   }
 
   async ngOnInit(): Promise<any> {
-    console.log('AppComponent initialized.');
-
     window.electronAPI.onAddAliasReply((result: any) => {
       console.log('Add Alias Reply:', result);
       if (result.success) {
@@ -179,15 +177,6 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleAppearanceClicked() {
-    // console.log(this.activeAppearance());
-    if (this.currentAppearance() === 'dark') {
-      this.settingsService.setAppearancePreference('light');
-    } else {
-      this.settingsService.setAppearancePreference('dark');
-    }
-  }
-
   handleSettingsClicked() {
     this.settingsDrawerVisible.set(!this.settingsDrawerVisible());
   }
@@ -216,6 +205,10 @@ export class AppComponent implements OnInit, OnDestroy {
   handleUserClickedGithubLogin() {
     // this.store.dispatch(CloudDataActions.loginUser());
     this.authService.signInWithGitHub();
+  }
+
+  logOut(): void {
+    this.authService.signOut();
   }
 
 }

@@ -32,6 +32,7 @@ export const reducer = createReducer(
     ...state,
     saving: false,
   })),
+  on(LocalAliasesActions.updateLocalAlias, (state, action) => adapter.updateOne(action.alias, state))
 );
 
 export const localAliasesFeature = createFeature({
