@@ -27,6 +27,7 @@ export interface IElectronAPI {
 
   getAliases: () => Promise<Alias[]>;
   addAlias: (alias: NewAlias) => void;
+  syncAliasesFromCloud: (aliases: Alias[]) => Promise<{ success: boolean; error?: string }>;
   onAddAliasReply: (callback: (result: { success: boolean; name: string; error?: string }) => void) => void;
 
   // --- Update uses ID and full Alias object ---
@@ -52,6 +53,11 @@ export interface IElectronAPI {
   checkForUpdates: () => void;
   installUpdate: () => void;
   onUpdaterStatus: (callback: (status: UpdateStatus) => void) => void;
+
+  // --- Firestore Auth ---
+  authenticateWithGitHub: (userData: { user: any; token: string }) => void;
+  onAuthSuccess: (callback: (decodedToken: any) => void) => void;
+  onAuthError: (callback: (error: any) => void) => void;
 
   removeAllListeners: (channel: string) => void;
 }

@@ -28,7 +28,14 @@ export class AuthService {
     onAuthStateChanged(this.auth, async (firebaseUser: User | null) => {
       let appUser: AppUser | null;
       if (firebaseUser) {
-        console.log('firebaseUser', firebaseUser);
+        const user = firebaseUser;
+        const idToken = await firebaseUser.getIdToken();
+        const userData = {
+          user,
+          token: idToken,
+        };
+        window.electronAPI.authenticateWithGitHub(userData);
+        // console.log('firebaseUser', firebaseUser);
         appUser = {
           uid: firebaseUser.uid,
           displayName: firebaseUser.displayName,
@@ -36,7 +43,7 @@ export class AuthService {
           photoURL: firebaseUser.photoURL
         };
         // Initialize user data when user signs in
-        this.store.dispatch(CloudDataActions.userLoggedInSuccess({ data: appUser }));
+        // this.store.dispatch(CloudDataActions.userLoggedInSuccess({ data: appUser }));
       } else {
         console.log('User Logged Out');
       }

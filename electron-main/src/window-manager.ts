@@ -67,6 +67,7 @@ function createWindowInternal(): BrowserWindow {
             preload: preloadPath, // Relative to dist-electron/src
             contextIsolation: true,
             nodeIntegration: false,
+            sandbox: false,
         },
         show: false, // Create hidden initially; use showMainWindow() to display
         frame: true, // Keep standard frame unless specifically making frameless

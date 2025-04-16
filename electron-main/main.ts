@@ -1,13 +1,15 @@
-import { app, BrowserWindow } from 'electron';
+import {app, BrowserWindow} from 'electron';
 import {registerAllIpcHandlers} from './src/ipc-handlers';
-import { ensureMainWindow, showMainWindow, getMainWindow } from './src/window-manager';
-import { readAliasData } from './src/data-store'; // For initial generation
-import { regenerateAliasShellFile } from './src/shell-generator'; // For initial generation
-import { PLATFORM } from './src/config';
+import {ensureMainWindow, showMainWindow, getMainWindow} from './src/window-manager';
+import {readAliasData} from './src/data-store'; // For initial generation
+import {regenerateAliasShellFile} from './src/shell-generator'; // For initial generation
+import {PLATFORM} from './src/config';
 import {watchSystemAppearance} from "./src/settings-manager";
 import {createTray, destroyTray} from "./src/tray-manager";
 import {closeViewerWindow} from "./src/viewer-window-manager";
-import { initAutoUpdater } from './src/update-manager';
+import {initAutoUpdater} from './src/update-manager';
+import {initBackgroundSync, stopBackgroundSync} from "./src/background-sync/alias-sync-manager";
+import Store from "electron-store";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -18,7 +20,13 @@ if (require('electron-squirrel-startup')) {
  * Performs initial setup tasks when the app is ready.
  */
 async function initializeApp(): Promise<void> {
+    // const store = new Store();
+    // const savedUser = store.get('user');
     console.log('App is ready, initializing...');
+
+    // if (savedUser) {
+    //     await initBackgroundSync();
+    // }
 
     // Perform setup tasks first
     try {
@@ -90,5 +98,6 @@ app.on('before-quit', () => {
 
 // The 'quit' event fires after all windows are closed.
 app.on('quit', () => {
+    // stopBackgroundSync();
     console.log("Application has quit.");
 });

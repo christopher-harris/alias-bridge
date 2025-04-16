@@ -14,6 +14,9 @@ export interface AliasApi {
     // --- Delete takes ID ---
     deleteAlias: (id: string) => void;
     onDeleteAliasReply: (callback: (result: { success: boolean; id: string; name: string | null; error?: string }) => void) => void;
+
+    syncAliasesFromCloud: (aliases: Alias[]) => Promise<{ success: boolean; error?: string }>;
+
 }
 
 export const aliasApi: AliasApi = {
@@ -29,4 +32,13 @@ export const aliasApi: AliasApi = {
     // --- Delete Implementation uses ID ---
     deleteAlias: (id) => ipcRenderer.send('delete-alias', id),
     onDeleteAliasReply: (callback) => ipcRenderer.on('delete-alias-reply', (_event, result) => callback(result)),
+
+    syncAliasesFromCloud: (aliases) => {
+        if (!aliases || !Array.isArray(aliases)) {
+            console.error('Invalid aliases data:', aliases);
+            return Promise.resolve({ success: false, error: 'Invalid aliases data' });
+        }
+        return ipcRenderer.invoke('sync-aliases-from-cloud', aliases);
+    },
+
 };
