@@ -1,8 +1,17 @@
-import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  Signal
+} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {AliasService} from './services/alias.service';
 import {ToastModule} from 'primeng/toast';
 import {MessageService} from 'primeng/api';
 import {ToolbarModule} from 'primeng/toolbar';
@@ -22,19 +31,13 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {LocalSettingsActions} from './state/local-settings/local-settings.actions';
 import {localSettingsFeature} from './state/local-settings/local-settings.reducer';
-import {CloudDataActions} from './state/cloud-data/cloud-data.actions';
 import {UpdateStatusComponent} from './components/update-status/update-status.component';
 import {AuthService} from './services/auth.service';
 import {cloudDataFeature} from './state/cloud-data/cloud-data.reducer';
 import {HeaderComponent} from './components/header/header.component';
 import {Observable} from 'rxjs';
 import {AppUser} from './models/app-user.model';
-
-interface Alias {
-  name: string;
-  command: string;
-  comment?: string;
-}
+import {ElectronListenerService} from './services/electron-listener.service';
 
 @Component({
   selector: 'app-root',
@@ -58,12 +61,13 @@ interface Alias {
     MessageService
   ]
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   store = inject(Store);
   messageService = inject(MessageService);
   updateService = inject(UpdateService);
   settingsService = inject(SettingsService);
   authService = inject(AuthService);
+  listenerService = inject(ElectronListenerService);
 
   appUser$: Observable<AppUser | null> = this.store.select(cloudDataFeature.selectAppUser);
 
@@ -117,43 +121,17 @@ export class AppComponent implements OnInit, OnDestroy {
     window.electronAPI.onUpdaterStatus((result: any) => {
       console.log('UpdaterStatus: ', result);
     });
+  }
 
-    // // Example: Listen for replies from the main process
-    // window.electronAPI?.onMessageReply((message) => {
-    //   console.log('Reply received in renderer:', message);
-    //   this.messageFromMain = message;
-    //   this.cdr.detectChanges(); // Trigger change detection
-    // });
-    //
-    // // Listen for add alias replies
-    // window.electronAPI?.onAddAliasReply((result) => {
-    //   console.log('Add Alias Reply:', result);
-    //   this.addStatusMessage = result.success
-    //     ? `Alias '${result.name}' request sent (implement actual saving!).`
-    //     : `Failed to add alias '${result.name}'.`;
-    //   if (result.success) {
-    //     // Optionally clear form or reload list after successful *request*
-    //     this.newAliasName = '';
-    //     this.newAliasCommand = '';
-    //     this.newAliasComment = '';
-    //     this.loadAliases(); // Refresh list to show (dummy) added alias
-    //   }
-    //   this.cdr.detectChanges();
-    //   // Clear message after a few seconds
-    //   setTimeout(() => {
-    //     this.addStatusMessage = '';
-    //     this.cdr.detectChanges();
-    //   }, 5000);
-    // });
-    //
-    // // Load initial aliases
-    // await this.loadAliases();
+  ngAfterViewInit() {
+    this.listenerService.initListeners();
   }
 
   ngOnDestroy(): void {
     // IMPORTANT: Remove listeners when component is destroyed to prevent memory leaks
     window.electronAPI?.removeAllListeners('message-from-main');
     window.electronAPI?.removeAllListeners('add-alias-reply');
+    window.electronAPI?.removeAllListeners('aliases-updated');
   }
 
   setPrimeTheme(theme: PrimeTheme) {

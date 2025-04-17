@@ -46,6 +46,9 @@ export type ElectronAPI = {
     onAuthSuccess: (callback: (decodedToken: any) => void) => void;
     onAuthError: (callback: (error: any) => void) => void;
 
+    // --- Tell the UI about the updates ---
+    onAliasesUpdated: (callback: (aliases: Alias[]) => void) => void;
+
     removeAllListeners: (channel: string) => void;
 }
 
@@ -104,7 +107,11 @@ const api: ElectronAPI = {
 
     onAuthError: (callback) => {
         ipcRenderer.on('firebase-github-auth-error', (_event, error) => callback(error));
-    }
+    },
+
+    onAliasesUpdated: (callback) =>
+        ipcRenderer.on('aliases-updated', (_event, aliases: Alias[]) => callback(aliases)),
+
 };
 
 // Expose specific IPC functions to the Angular app (Renderer process)

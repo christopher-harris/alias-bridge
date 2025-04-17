@@ -6,6 +6,8 @@ import {isLocalNewer} from "../utils/alias-utils";
 import {readAliasData, saveAliasData} from "../data-store";
 import {firestoreAdmin} from "./firebase-admin";
 import {Alias} from "../types";
+import {regenerateAliasShellFile} from "../shell-generator";
+import {BrowserWindow} from "electron";
 
 dotenv.config();
 
@@ -35,6 +37,9 @@ export async function initBackgroundSync() {
         unsubscribe = cloudSyncService.subscribeToChanges(async (remoteAliases) => {
             logger.info('Remote update received. Saving to local...');
             await saveAliasData(remoteAliases);
+            await regenerateAliasShellFile(remoteAliases);
+            const savedAliasesData = await readAliasData();
+            notifyUIOfAliasUpdate(savedAliasesData);
         });
 
         logger.info('Background sync initialized successfully.');
@@ -126,6 +131,15 @@ async function deleteCloudAlias(aliasId: string): Promise<void> {
     // For example, you would call Firebase's database API to delete the alias
     await cloudSyncService.deleteAlias(aliasId);
 }
+
+
+function notifyUIOfAliasUpdate(updatedAliases: Alias[]) {
+    const win = BrowserWindow.getAllWindows()[0]; // or however you're managing your main window
+    if (win) {
+        win.webContents.send('aliases-updated', updatedAliases);
+    }
+}
+
 
 export function stopBackgroundSync() {
     if (unsubscribe) {

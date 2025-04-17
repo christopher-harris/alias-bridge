@@ -60,6 +60,8 @@ export interface IElectronAPI {
   onAuthError: (callback: (error: any) => void) => void;
 
   removeAllListeners: (channel: string) => void;
+
+  onAliasesUpdated: (callback: (aliases: Alias[]) => void) => void;
 }
 
 // Declare the global window object extension
