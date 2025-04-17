@@ -28,16 +28,17 @@ import {UpdateService} from './services/update.service';
 import {MessageModule} from 'primeng/message';
 import {SettingsService} from './services/settings.service';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {Store} from '@ngrx/store';
+import {select, Store} from '@ngrx/store';
 import {LocalSettingsActions} from './state/local-settings/local-settings.actions';
 import {localSettingsFeature} from './state/local-settings/local-settings.reducer';
 import {UpdateStatusComponent} from './components/update-status/update-status.component';
 import {AuthService} from './services/auth.service';
-import {cloudDataFeature} from './state/cloud-data/cloud-data.reducer';
 import {HeaderComponent} from './components/header/header.component';
+import {ElectronListenerService} from './services/electron-listener.service';
+import {AuthActions} from './state/app/auth/auth.actions';
 import {Observable} from 'rxjs';
 import {AppUser} from './models/app-user.model';
-import {ElectronListenerService} from './services/electron-listener.service';
+import {selectAppUser} from './state/app/auth/auth.selectors';
 
 @Component({
   selector: 'app-root',
@@ -69,8 +70,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   authService = inject(AuthService);
   listenerService = inject(ElectronListenerService);
 
-  appUser$: Observable<AppUser | null> = this.store.select(cloudDataFeature.selectAppUser);
-
   settingsDrawerVisible = signal<boolean>(false);
   availableAppearanceOptions = this.settingsService.availableAppearanceSettings;
   availableThemeOptions = this.settingsService.availablePrimeThemes;
@@ -79,6 +78,8 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   updateStatus: Signal<UpdateStatus>;
   isUpdateReady: Signal<boolean>;
+
+  appUser$: Observable<AppUser | null> = this.store.pipe(select(selectAppUser));
 
   title = 'AliasBridge UI';
 
@@ -92,7 +93,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     this.updateStatus = this.updateService.updateStatus;
     this.isUpdateReady = this.updateService.isUpdateReady;
-    // this.store.select(cloudDataFeature.selectAppUser).subscribe(x => console.log(x));
+    this.listenerService.initListeners();
   }
 
   async ngOnInit(): Promise<any> {
@@ -124,7 +125,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.listenerService.initListeners();
+    // this.listenerService.initListeners();
   }
 
   ngOnDestroy(): void {
@@ -181,12 +182,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   handleUserClickedGithubLogin() {
-    // this.store.dispatch(CloudDataActions.loginUser());
-    this.authService.signInWithGitHub();
+    this.store.dispatch(AuthActions.userClickedGitHubAuth());
   }
 
   logOut(): void {
-    this.authService.signOut();
+    this.store.dispatch(AuthActions.userClickedLogOut());
+    // this.authService.signOut();
   }
 
 }

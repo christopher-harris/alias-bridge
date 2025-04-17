@@ -1,7 +1,7 @@
-import { reducer, initialState } from './cloud-data.reducer';
+import { reducer, initialState } from './auth.reducer';
 
-describe('CloudData Reducer', () => {
-  describe('unknown action', () => {
+describe('Auth Reducer', () => {
+  describe('an unknown action', () => {
     it('should return the previous state', () => {
       const action = {} as any;
 

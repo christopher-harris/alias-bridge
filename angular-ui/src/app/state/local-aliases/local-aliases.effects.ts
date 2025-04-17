@@ -35,4 +35,11 @@ export class LocalAliasesEffects {
     );
   }, {dispatch: false});
 
+  aliasUpdated$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(LocalAliasesActions.updateLocalAlias),
+      tap((action) => this.aliasService.updateAlias(action.alias.id, action.alias))
+    );
+  }, {dispatch: false});
+
 }

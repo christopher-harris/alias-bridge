@@ -8,18 +8,15 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import {FirebaseService} from './firebase.service';
-import {AuthRepository} from '../state/auth/auth.repository';
 import {AppUser} from '../models/app-user.model';
 import {Store} from '@ngrx/store';
-import {CloudDataActions} from '../state/cloud-data/cloud-data.actions';
-// import {UserDataService} from './user-data.service';
+import {AuthActions} from '../state/app/auth/auth.actions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   store = inject(Store);
-  authStore = inject(AuthRepository);
   private auth: Auth;
 
   constructor(private firebaseService: FirebaseService) {
@@ -38,11 +35,11 @@ export class AuthService {
         // Initialize user data when user signs in
         // this.store.dispatch(CloudDataActions.userLoggedInSuccess({ data: appUser }));
         window.electronAPI.authenticateWithGitHub({user: appUser, token: idToken});
+        this.store.dispatch(AuthActions.gitHubAuthSuccess({ data: appUser }));
       } else {
         console.log('User Logged Out');
+        this.store.dispatch(AuthActions.userLoggedOut());
       }
-
-      this.authStore.updateUser(appUser!);
     });
   }
 
