@@ -84,7 +84,6 @@ export class DashboardComponent {
 
   onRowDelete(alias: Alias) {
     console.log(alias);
-    // this.aliasService.deleteAlias(alias.id);
     this.store.dispatch(LocalAliasesActions.deleteLocalAlias({ id: alias.id }));
   }
 }

@@ -84,7 +84,19 @@ export const cloudSyncService = {
     },
 
     async deleteAlias(aliasId: string): Promise<void> {
-        await db.ref(`users/${userId}/aliases/${aliasId}`).remove();
+        const clientId = getClientId();
+        const aliasRef = db.ref(`users/${userId}/aliases/${aliasId}`);
+        const metadataRef = db.ref(`users/${userId}`);
+
+        // Perform both operations in a multi-path update
+        const updates: Record<string, any> = {};
+        updates[`aliases/${aliasId}`] = null;
+        updates['updatedBy'] = clientId;
+        updates['updatedAt'] = Date.now();
+
+        await metadataRef.update(updates);
+        // const clientId = getClientId();
+        // await db.ref(`users/${userId}/aliases/${aliasId}`).remove();
     }
 
 };
