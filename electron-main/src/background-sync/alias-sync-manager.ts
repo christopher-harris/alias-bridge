@@ -36,9 +36,15 @@ export async function initBackgroundSync() {
         // Start live listener
         unsubscribe = cloudSyncService.subscribeToChanges(async (remoteAliases) => {
             logger.info('Remote update received. Saving to local...');
+            const currentLocalAliases = await readAliasData();
+            await handleDeletions(currentLocalAliases, remoteAliases);
+
             await saveAliasData(remoteAliases);
+
             await regenerateAliasShellFile(remoteAliases);
+
             const savedAliasesData = await readAliasData();
+
             notifyUIOfAliasUpdate(savedAliasesData);
         });
 
