@@ -1,13 +1,12 @@
-import { FirebaseService } from './firebase.service';
 import { cloudSyncService } from './cloud-sync.service';
 import dotenv from 'dotenv';
 import logger from "electron-log";
 import {isLocalNewer} from "../utils/alias-utils";
 import {readAliasData, saveAliasData} from "../data-store";
-import {firestoreAdmin} from "./firebase-admin";
 import {Alias} from "../types";
 import {regenerateAliasShellFile} from "../shell-generator";
 import {BrowserWindow} from "electron";
+import debounce from 'lodash.debounce';
 
 dotenv.config();
 
@@ -37,9 +36,10 @@ export async function initBackgroundSync() {
         unsubscribe = cloudSyncService.subscribeToChanges(async (remoteAliases) => {
             logger.info('Remote update received. Saving to local...');
             const currentLocalAliases = await readAliasData();
-            await handleDeletions(currentLocalAliases, remoteAliases);
 
             await saveAliasData(remoteAliases);
+
+            // await handleDeletionsDebounced(currentLocalAliases, remoteAliases);
 
             await regenerateAliasShellFile(remoteAliases);
 
@@ -81,6 +81,13 @@ function mergeAliases(local: Alias[], cloud: Alias[]): Alias[] {
         (a, b) => (b.lastUpdated?.getTime() ?? 0) - (a.lastUpdated?.getTime() ?? 0) // Compare timestamps
     );
 }
+
+const handleDeletionsDebounced = debounce(
+    async (localAliases: Alias[], remoteAliases: Alias[]) => {
+        await handleDeletions(localAliases, remoteAliases);
+    },
+    300 // ms delay
+);
 
 /**
  * Handle alias deletions: check for missing aliases and remove them from either

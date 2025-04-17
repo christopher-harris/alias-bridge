@@ -33,25 +33,35 @@ export const cloudSyncService = {
     },
 
     async getAliases(): Promise<Alias[]> {
-        const snapshot = await db.ref(`users/${userId}/aliases`).once('value');
-        const data = snapshot.val();
-        return data ? Object.values(data) as Alias[] : [];
+        try {
+            const snapshot = await db.ref(`users/${userId}/aliases`).once('value');
+            const data = snapshot.val();
+            return data ? Object.values(data) as Alias[] : [];
+        } catch (error) {
+            console.error('Error fetching aliases from database:', error);
+            throw error;
+        }
     },
 
     async uploadAliases(aliases: Alias[]): Promise<void> {
-        const clientId = getClientId();
-        console.log('uploadAliases clientId: ', clientId);
+        try {
+            const clientId = getClientId();
+            console.log('uploadAliases clientId: ', clientId);
 
-        const updates: { [key: string]: Alias } = {};
-        aliases.forEach(alias => {
-            updates[alias.id] = alias;
-        });
+            const updates: { [key: string]: Alias } = {};
+            aliases.forEach(alias => {
+                updates[alias.id] = alias;
+            });
 
-        await db.ref(`users/${userId}`).set({
-            aliases: updates,
-            updatedBy: clientId,
-            updatedAt: Date.now()
-        });
+            await db.ref(`users/${userId}`).set({
+                aliases: updates,
+                updatedBy: clientId,
+                updatedAt: Date.now()
+            });
+        } catch (error) {
+            console.error('Error uploading aliases to database:', error);
+            throw error;
+        }
     },
 
     subscribeToChanges(onChange: (aliases: Alias[]) => void): () => void {
@@ -69,18 +79,23 @@ export const cloudSyncService = {
     },
 
     async uploadAliasToRealtimeDatabase(alias: Alias): Promise<void> {
-        const clientId = getClientId();
-        console.log('uploadAliases clientId: ', clientId);
+        try {
+            const clientId = getClientId();
+            console.log('uploadAliases clientId: ', clientId);
 
-        const updates: { [key: string]: any } = {};
+            const updates: { [key: string]: any } = {};
 
-        // Only update the alias we care about
-        updates[`aliases/${alias.id}`] = alias;
-        // Update metadata too
-        updates['updatedBy'] = clientId;
-        updates['updatedAt'] = Date.now();
+            // Only update the alias we care about
+            updates[`aliases/${alias.id}`] = alias;
+            // Update metadata too
+            updates['updatedBy'] = clientId;
+            updates['updatedAt'] = Date.now();
 
-        await db.ref(`users/${userId}`).update(updates);
+            await db.ref(`users/${userId}`).update(updates);
+        } catch (error) {
+            console.error('Error uploading aliases to database:', error);
+            throw error;
+        }
     },
 
     async deleteAlias(aliasId: string): Promise<void> {
