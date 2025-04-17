@@ -2,7 +2,7 @@ import { Alias } from '../types';
 import {firebaseAdmin} from './firebase-admin';
 import {database} from "firebase-admin";
 import Database = database.Database;
-import { machineIdSync } from 'node-machine-id';
+import {getClientId} from "../client-id";
 
 /**
  * Firestore instance shared by all cloud sync operations.
@@ -16,8 +16,6 @@ let db: Database = firebaseAdmin.database();
  * Defaults to 'anonymous' if `init()` hasn't been called.
  */
 let userId = 'anonymous';
-
-const CLIENT_ID = machineIdSync();
 
 /**
  * Service for managing synchronization of aliases with the Firebase Firestore backend.
@@ -49,7 +47,7 @@ export const cloudSyncService = {
 
         await db.ref(`users/${userId}`).set({
             aliases: updates,
-            updatedBy: CLIENT_ID,
+            updatedBy: getClientId(),
             updatedAt: Date.now()
         });
     },
@@ -58,7 +56,7 @@ export const cloudSyncService = {
         const ref = db.ref(`users/${userId}`);
         const listener = ref.on('value', (snapshot) => {
             const data = snapshot.val();
-            if (!data || data.updatedBy === CLIENT_ID) return;
+            if (!data || data.updatedBy === getClientId()) return;
 
             const aliases = data.aliases ? Object.values(data.aliases) as Alias[] : [];
             onChange(aliases);
