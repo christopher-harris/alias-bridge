@@ -16,7 +16,7 @@ export const LocalAliasesActions = createActionGroup({
     'Update LocalAlias': props<{ alias: Alias }>(),
     'Update Local Alias Success': props<{ alias: Update<Alias> }>(),
     'Update Local Alias Failed': props<{ error: any }>(),
-    'Update LocalAliases': props<{ localAliases: Alias[] }>(),
+    'Update Local Aliases': props<{ aliases: Alias[] }>(),
     'Delete LocalAlias': props<{ id: string }>(),
     'Local Alias Deleted': props<{ id: string }>(),
     'Delete LocalAliases': props<{ ids: string[] }>(),

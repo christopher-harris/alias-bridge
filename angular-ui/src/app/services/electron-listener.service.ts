@@ -20,7 +20,7 @@ export class ElectronListenerService {
 
     window.electronAPI.onAliasesUpdated((result: any) => {
       console.log('Aliases Updated:', result);
-      this.store.dispatch(LocalAliasesActions.addLocalAliases({aliases: result}));
+      this.store.dispatch(LocalAliasesActions.updateLocalAliases({aliases: result}));
     });
 
     this.listenersRegistered = true;
