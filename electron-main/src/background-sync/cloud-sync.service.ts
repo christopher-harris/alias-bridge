@@ -39,6 +39,8 @@ export const cloudSyncService = {
     },
 
     async uploadAliases(aliases: Alias[]): Promise<void> {
+        const clientId = getClientId();
+        console.log('uploadAliases clientId: ', clientId);
 
         const updates: { [key: string]: Alias } = {};
         aliases.forEach(alias => {
@@ -47,16 +49,17 @@ export const cloudSyncService = {
 
         await db.ref(`users/${userId}`).set({
             aliases: updates,
-            updatedBy: getClientId(),
+            updatedBy: clientId,
             updatedAt: Date.now()
         });
     },
 
     subscribeToChanges(onChange: (aliases: Alias[]) => void): () => void {
+        const clientId = getClientId();
         const ref = db.ref(`users/${userId}`);
         const listener = ref.on('value', (snapshot) => {
             const data = snapshot.val();
-            if (!data || data.updatedBy === getClientId()) return;
+            if (!data || data.updatedBy === clientId) return;
 
             const aliases = data.aliases ? Object.values(data.aliases) as Alias[] : [];
             onChange(aliases);
@@ -66,7 +69,18 @@ export const cloudSyncService = {
     },
 
     async uploadAliasToRealtimeDatabase(alias: Alias): Promise<void> {
-        await db.ref(`users/${userId}/aliases/${alias.id}`).set(alias);
+        const clientId = getClientId();
+        console.log('uploadAliases clientId: ', clientId);
+
+        const updates: { [key: string]: any } = {};
+
+        // Only update the alias we care about
+        updates[`aliases/${alias.id}`] = alias;
+        // Update metadata too
+        updates['updatedBy'] = clientId;
+        updates['updatedAt'] = Date.now();
+
+        await db.ref(`users/${userId}`).update(updates);
     },
 
     async deleteAlias(aliasId: string): Promise<void> {

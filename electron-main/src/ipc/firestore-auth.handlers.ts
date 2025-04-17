@@ -19,7 +19,7 @@ export function firestoreAuthHandlers(): void {
         try {
             // Verify the Firebase ID token received from Angular
             const decodedToken = await authAdmin.verifyIdToken(userData.token);
-            console.log('Firebase decoded token', decodedToken);
+            // console.log('Firebase decoded token', decodedToken);
 
             const userDataToStore = {
                 uid: decodedToken.uid,
@@ -29,7 +29,7 @@ export function firestoreAuthHandlers(): void {
                 token: userData.token,
             };
 
-            console.log(userDataToStore);
+            // console.log(userDataToStore);
 
             // Store user in electron-store
             store.set('user', userDataToStore);
