@@ -9,6 +9,7 @@ export interface FirestoreAuthApi {
 
 export const firestoreAuthApi: FirestoreAuthApi = {
     authenticateWithGitHub: (userData) => {
+        console.log(userData);
         ipcRenderer.send('firebase-github-auth', userData);
     },
     

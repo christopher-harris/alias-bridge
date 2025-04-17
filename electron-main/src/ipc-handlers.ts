@@ -1,5 +1,6 @@
 import {ipcMain, IpcMainEvent} from "electron";
 import {
+    firestoreAuthHandlers,
     registerAliasHandlers,
     registerOsHandlers,
     registerSettingsHandlers,
@@ -15,7 +16,7 @@ export function registerAllIpcHandlers(): void {
         event.reply('message-from-main', `Main process received: "${arg}" at ${new Date()}`);
     });
 
-    // firestoreAuthHandlers();
+    firestoreAuthHandlers();
 
     registerOsHandlers();
     registerAliasHandlers();

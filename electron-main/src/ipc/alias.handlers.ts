@@ -3,6 +3,10 @@ import {Alias, IncomingAliasData} from "../types";
 import {readAliasData, saveAliasData} from "../data-store";
 import {regenerateAliasShellFile} from "../shell-generator";
 import {v4 as uuidv4} from 'uuid';
+import Store from "electron-store";
+import {cloudSyncService} from "../background-sync/cloud-sync.service";
+
+const store = new Store();
 
 export function registerAliasHandlers(): void {
     console.log('Registering Alias IPC Handlers...');
@@ -51,7 +55,9 @@ export function registerAliasHandlers(): void {
 
             console.log(`Alias ${IncomingAliasData.name} processed successfully.`);
             event.reply('add-alias-reply', {success: true, alias: IncomingAliasData});
-
+            if (store.has('user')) {
+                cloudSyncService.uploadAliasToRealtimeDatabase(IncomingAliasData);
+            }
         } catch (error: any) {
             console.error("Error processing add-alias:", error);
             event.reply('add-alias-reply', {success: false, name: receivedAliasData.name, error: error.message});
@@ -129,6 +135,7 @@ export function registerAliasHandlers(): void {
 
             // Save the modified list back to JSON
             await saveAliasData(currentAliases);
+            cloudSyncService.uploadAliasToRealtimeDatabase(updatedAliasData);
 
             // Regenerate the .sh file
             await regenerateAliasShellFile(currentAliases);
@@ -181,6 +188,7 @@ export function registerAliasHandlers(): void {
 
             // Save the filtered list (without the deleted alias) back to JSON
             await saveAliasData(updatedAliases);
+            cloudSyncService.deleteAlias(idToDelete);
 
             // Regenerate the .sh file
             await regenerateAliasShellFile(updatedAliases);

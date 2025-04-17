@@ -42,9 +42,9 @@ export type ElectronAPI = {
     onUpdaterStatus: (callback: (status: UpdateStatus) => void) => void;
 
     // --- Firebase Auth ---
-    // authenticateWithGitHub: (userData: { user: any; token: string }) => void;
-    // onAuthSuccess: (callback: (decodedToken: any) => void) => void;
-    // onAuthError: (callback: (error: any) => void) => void;
+    authenticateWithGitHub: (userData: { user: any; token: string }) => void;
+    onAuthSuccess: (callback: (decodedToken: any) => void) => void;
+    onAuthError: (callback: (error: any) => void) => void;
 
     removeAllListeners: (channel: string) => void;
 }
@@ -94,17 +94,17 @@ const api: ElectronAPI = {
 
     removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
 
-    // authenticateWithGitHub: (userData) => {
-    //     ipcRenderer.send('firebase-github-auth', userData);
-    // },
-    //
-    // onAuthSuccess: (callback) => {
-    //     ipcRenderer.on('firebase-github-auth-success', (_event, decodedToken) => callback(decodedToken));
-    // },
-    //
-    // onAuthError: (callback) => {
-    //     ipcRenderer.on('firebase-github-auth-error', (_event, error) => callback(error));
-    // }
+    authenticateWithGitHub: (userData) => {
+        ipcRenderer.send('firebase-github-auth', userData);
+    },
+
+    onAuthSuccess: (callback) => {
+        ipcRenderer.on('firebase-github-auth-success', (_event, decodedToken) => callback(decodedToken));
+    },
+
+    onAuthError: (callback) => {
+        ipcRenderer.on('firebase-github-auth-error', (_event, error) => callback(error));
+    }
 };
 
 // Expose specific IPC functions to the Angular app (Renderer process)

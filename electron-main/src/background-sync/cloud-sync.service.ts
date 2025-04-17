@@ -1,47 +1,68 @@
-import {collection, doc, Firestore, getDocs, onSnapshot, setDoc,} from 'firebase/firestore';
-import {Alias} from "../types";
+import { Firestore } from 'firebase-admin/firestore';
+import { Alias } from '../types';
+import {firebaseAdmin, firestoreAdmin} from './firebase-admin';
+import {database} from "firebase-admin";
+import Database = database.Database;
 
-let firestore: Firestore;
-const ALIASES_COLLECTION = 'aliases';
-const USER_ID = 'default-user'; // replace with dynamic user ID if using auth
+/**
+ * Firestore instance shared by all cloud sync operations.
+ * This is initialized via the `firebase-admin.ts` module to ensure `initializeApp()` has been called.
+ */
+// let db: Firestore = firestoreAdmin;
+let db: Database = firebaseAdmin.database();
 
+/**
+ * UID of the currently authenticated Firebase user.
+ * Defaults to 'anonymous' if `init()` hasn't been called.
+ */
+let userId = 'anonymous';
+
+/**
+ * Service for managing synchronization of aliases with the Firebase Firestore backend.
+ * Handles CRUD operations and real-time updates.
+ */
 export const cloudSyncService = {
     /**
-     * Initialize the service with a Firestore instance.
+     * Initializes the sync service with the authenticated user's UID.
+     * Must be called after Firebase authentication is completed.
+     *
+     * @param uid - The Firebase user's UID. If omitted, sync will use 'anonymous'.
      */
-    init(firebaseService: { firestore: Firestore }) {
-        firestore = firebaseService.firestore;
+    init(uid?: string) {
+        if (uid) userId = uid;
     },
 
-    /**
-     * Download aliases from Firestore.
-     */
     async getAliases(): Promise<Alias[]> {
-        const colRef = collection(firestore, `users/${USER_ID}/${ALIASES_COLLECTION}`);
-        const snapshot = await getDocs(colRef);
-        return snapshot.docs.map(doc => doc.data() as Alias);
+        const snapshot = await db.ref(`users/${userId}/aliases`).once('value');
+        const data = snapshot.val();
+        return data ? Object.values(data) as Alias[] : [];
     },
 
-    /**
-     * Upload the full alias array to Firestore.
-     */
     async uploadAliases(aliases: Alias[]): Promise<void> {
-        const promises = aliases.map(alias => {
-            const aliasDoc = doc(firestore, `users/${USER_ID}/${ALIASES_COLLECTION}`, alias.id);
-            return setDoc(aliasDoc, alias);
+        const updates: { [key: string]: Alias } = {};
+        aliases.forEach(alias => {
+            updates[alias.id] = alias;
         });
-
-        await Promise.all(promises);
+        await db.ref(`users/${userId}/aliases`).set(updates);
     },
 
-    /**
-     * Subscribe to Firestore changes and call the callback with new data.
-     */
     subscribeToChanges(onChange: (aliases: Alias[]) => void): () => void {
-        const colRef = collection(firestore, `users/${USER_ID}/${ALIASES_COLLECTION}`);
-        return onSnapshot(colRef, snapshot => {
-            const updatedAliases = snapshot.docs.map(doc => doc.data() as Alias);
-            onChange(updatedAliases);
+        const ref = db.ref(`users/${userId}/aliases`);
+        const listener = ref.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const aliases = data ? Object.values(data) as Alias[] : [];
+            onChange(aliases);
         });
+
+        return () => ref.off('value', listener);
+    },
+
+    async uploadAliasToRealtimeDatabase(alias: Alias): Promise<void> {
+        await db.ref(`users/${userId}/aliases/${alias.id}`).set(alias);
+    },
+
+    async deleteAlias(aliasId: string): Promise<void> {
+        await db.ref(`users/${userId}/aliases/${aliasId}`).remove();
     }
+
 };

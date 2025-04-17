@@ -20,13 +20,13 @@ if (require('electron-squirrel-startup')) {
  * Performs initial setup tasks when the app is ready.
  */
 async function initializeApp(): Promise<void> {
-    // const store = new Store();
-    // const savedUser = store.get('user');
+    const store = new Store();
+    const savedUser = store.get('user');
     console.log('App is ready, initializing...');
 
-    // if (savedUser) {
-    //     await initBackgroundSync();
-    // }
+    if (savedUser) {
+        await initBackgroundSync();
+    }
 
     // Perform setup tasks first
     try {
@@ -98,6 +98,6 @@ app.on('before-quit', () => {
 
 // The 'quit' event fires after all windows are closed.
 app.on('quit', () => {
-    // stopBackgroundSync();
+    stopBackgroundSync();
     console.log("Application has quit.");
 });
