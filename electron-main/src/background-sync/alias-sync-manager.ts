@@ -23,15 +23,29 @@ export async function initBackgroundSync() {
             readAliasData()
         ]);
 
-        if (isLocalNewer(localAliases, cloudAliases)) {
-            logger.info('Uploading newer local aliases to cloud...');
-            await cloudSyncService.uploadAliases(localAliases);
-        } else {
-            logger.info('Using cloud aliases, writing them locally...');
-            await saveAliasData(cloudAliases);
-            await regenerateAliasShellFile(cloudAliases);
-            notifyUIOfAliasUpdate(cloudAliases);
-        }
+        logger.info('Merging cloud and local aliases...');
+        const mergedAliases = mergeAliasLists(cloudAliases, localAliases);
+
+        // Save merged to local storage
+        await saveAliasData(mergedAliases);
+
+        // Regenerate .sh file with merged aliases
+        await regenerateAliasShellFile(mergedAliases);
+
+        // Update the UI with merged data
+        notifyUIOfAliasUpdate(mergedAliases);
+
+        // Upload the merged result to the cloud
+        await cloudSyncService.uploadAliases(mergedAliases);
+        // if (isLocalNewer(localAliases, cloudAliases)) {
+        //     logger.info('Uploading newer local aliases to cloud...');
+        //     await cloudSyncService.uploadAliases(localAliases);
+        // } else {
+        //     logger.info('Using cloud aliases, writing them locally...');
+        //     await saveAliasData(cloudAliases);
+        //     await regenerateAliasShellFile(cloudAliases);
+        //     notifyUIOfAliasUpdate(cloudAliases);
+        // }
 
         // Start live listener
         unsubscribe = cloudSyncService.subscribeToChanges(async (remoteAliases) => {
@@ -53,45 +67,22 @@ export async function initBackgroundSync() {
     }
 }
 
-// async function handleDeletions(local: Alias[], cloud: Alias[]): Promise<void> {
-//     // Find deleted aliases locally (present in cloud, but missing from local)
-//     const deletedInLocal = cloud.filter(
-//         cloudAlias => !local.some(localAlias => localAlias.id === cloudAlias.id)
-//     );
-//
-//     // Find deleted aliases in the cloud (present in local, but missing from cloud)
-//     const deletedInCloud = local.filter(
-//         localAlias => !cloud.some(cloudAlias => cloudAlias.id === localAlias.id)
-//     );
-//
-//     // Delete missing aliases from the cloud
-//     await Promise.all(
-//         deletedInLocal.map(alias =>
-//             cloudSyncService.deleteAlias(alias.id)
-//         )
-//     );
-//
-//     // Delete missing aliases locally
-//     await Promise.all(
-//         deletedInCloud.map(alias =>
-//             deleteAliasData(alias.id)
-//         )
-//     );
-// }
+export function mergeAliasLists(cloud: Alias[], local: Alias[]): Alias[] {
+    const mergedMap = new Map<string, Alias>();
 
-// async function deleteAliasData(aliasId: string): Promise<void> {
-//     // Implement your local deletion logic here
-//     console.log(`Deleting alias ${aliasId} from local storage...`);
-//     // For example, you might remove the alias from a local JSON file or database
-// }
+    for (const alias of cloud) {
+        mergedMap.set(alias.id, alias);
+    }
 
+    for (const alias of local) {
+        const existing = mergedMap.get(alias.id);
+        if (!existing || alias.lastUpdated! > existing.lastUpdated!) {
+            mergedMap.set(alias.id, alias);
+        }
+    }
 
-// async function deleteCloudAlias(aliasId: string): Promise<void> {
-//     // Implement your cloud deletion logic here
-//     console.log(`Deleting alias ${aliasId} from cloud storage...`);
-//     // For example, you would call Firebase's database API to delete the alias
-//     await cloudSyncService.deleteAlias(aliasId);
-// }
+    return Array.from(mergedMap.values());
+}
 
 
 function notifyUIOfAliasUpdate(updatedAliases: Alias[]) {
