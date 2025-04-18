@@ -67,18 +67,22 @@ export function registerAliasHandlers(): void {
     ipcMain.handle('sync-aliases-from-cloud', async (event: IpcMainInvokeEvent, incomingAliases: Alias[]) => {
         console.log('IPC: Handling sync-aliases-from-cloud request');
 
-        try {
-            // Replace all aliases with the new list
-            await saveAliasData(incomingAliases);
+        console.log(store.get('user'));
 
-            // Regenerate the .sh file after saving
-            await regenerateAliasShellFile(incomingAliases);
+        if (store.has('user')) {
+            try {
+                // Replace all aliases with the new list
+                await saveAliasData(incomingAliases);
 
-            console.log('IPC: Alias sync from cloud completed.');
-            return { success: true };
-        } catch (error: any) {
-            console.error("Error during sync-aliases-from-cloud:", error);
-            return { success: false, error: error.message };
+                // Regenerate the .sh file after saving
+                await regenerateAliasShellFile(incomingAliases);
+
+                console.log('IPC: Alias sync from cloud completed.');
+                return { success: true };
+            } catch (error: any) {
+                console.error("Error during sync-aliases-from-cloud:", error);
+                return { success: false, error: error.message };
+            }
         }
     });
 
@@ -135,7 +139,9 @@ export function registerAliasHandlers(): void {
 
             // Save the modified list back to JSON
             await saveAliasData(currentAliases);
-            cloudSyncService.uploadAliasToRealtimeDatabase(updatedAliasData);
+            if (store.has('user')) {
+                cloudSyncService.uploadAliasToRealtimeDatabase(updatedAliasData);
+            }
 
             // Regenerate the .sh file
             await regenerateAliasShellFile(currentAliases);
@@ -188,7 +194,9 @@ export function registerAliasHandlers(): void {
 
             // Save the filtered list (without the deleted alias) back to JSON
             await saveAliasData(updatedAliases);
-            cloudSyncService.deleteAlias(idToDelete);
+            if (store.has('user')) {
+                cloudSyncService.deleteAlias(idToDelete);
+            }
 
             // Regenerate the .sh file
             await regenerateAliasShellFile(updatedAliases);

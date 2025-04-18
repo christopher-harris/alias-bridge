@@ -45,6 +45,10 @@ export type ElectronAPI = {
     authenticateWithGitHub: (userData: { user: any; token: string }) => void;
     onAuthSuccess: (callback: (decodedToken: any) => void) => void;
     onAuthError: (callback: (error: any) => void) => void;
+    
+    // Add these new methods after the existing Firebase Auth methods
+    logOut: () => void;
+    onLogOutSuccess: (callback: () => void) => void;
 
     // --- Tell the UI about the updates ---
     onAliasesUpdated: (callback: (aliases: Alias[]) => void) => void;
@@ -111,10 +115,12 @@ const api: ElectronAPI = {
 
     onAliasesUpdated: (callback) =>
         ipcRenderer.on('aliases-updated', (_event, aliases: Alias[]) => callback(aliases)),
+        
+    logOut: () => ipcRenderer.send('firebase-logout'),
+    onLogOutSuccess: (callback) => ipcRenderer.on('firebase-logout-success', () => callback()),
 
 };
 
 // Expose specific IPC functions to the Angular app (Renderer process)
 // Avoid exposing the entire ipcRenderer object for security reasons.
 contextBridge.exposeInMainWorld('electronAPI', api);
-

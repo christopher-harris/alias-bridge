@@ -59,6 +59,10 @@ export interface IElectronAPI {
   onAuthSuccess: (callback: (decodedToken: any) => void) => void;
   onAuthError: (callback: (error: any) => void) => void;
 
+  // --- Logout ---
+  logOut: () => void;
+  onLogOutSuccess: (callback: () => void) => void;
+
   removeAllListeners: (channel: string) => void;
 
   onAliasesUpdated: (callback: (aliases: Alias[]) => void) => void;

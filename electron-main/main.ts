@@ -22,6 +22,7 @@ if (require('electron-squirrel-startup')) {
 async function initializeApp(): Promise<void> {
     const store = new Store();
     const savedUser = store.get('user');
+    console.log('Main savedUser: ', savedUser);
     console.log('App is ready, initializing...');
 
     if (savedUser) {

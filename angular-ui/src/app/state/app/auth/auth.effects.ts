@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {exhaustMap} from 'rxjs';
+import {exhaustMap, tap} from 'rxjs';
 import {AuthService} from '../../../services/auth.service';
 import {AuthActions} from './auth.actions';
 
@@ -20,7 +20,10 @@ export class AuthEffects {
   logoutUser = createEffect(() => {
     return this.actions$.pipe(
       ofType(AuthActions.userClickedLogOut),
-      exhaustMap(() => this.authService.signOut())
+      tap(() => {
+        this.authService.signOut();
+        window.electronAPI.logOut();
+      })
     );
   }, {dispatch: false});
 
