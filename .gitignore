@@ -85,3 +85,4 @@ Thumbs.db
 /dev.readme.md
 /_dev-app-update.yml
 /dev-app-update.yml
+/electron-main/src/secrets/*

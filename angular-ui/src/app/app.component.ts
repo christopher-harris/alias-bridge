@@ -1,8 +1,17 @@
-import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  Signal
+} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {AliasService} from './services/alias.service';
 import {ToastModule} from 'primeng/toast';
 import {MessageService} from 'primeng/api';
 import {ToolbarModule} from 'primeng/toolbar';
@@ -19,22 +28,17 @@ import {UpdateService} from './services/update.service';
 import {MessageModule} from 'primeng/message';
 import {SettingsService} from './services/settings.service';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {Store} from '@ngrx/store';
+import {select, Store} from '@ngrx/store';
 import {LocalSettingsActions} from './state/local-settings/local-settings.actions';
 import {localSettingsFeature} from './state/local-settings/local-settings.reducer';
-import {CloudDataActions} from './state/cloud-data/cloud-data.actions';
 import {UpdateStatusComponent} from './components/update-status/update-status.component';
 import {AuthService} from './services/auth.service';
-import {cloudDataFeature} from './state/cloud-data/cloud-data.reducer';
 import {HeaderComponent} from './components/header/header.component';
+import {ElectronListenerService} from './services/electron-listener.service';
+import {AuthActions} from './state/app/auth/auth.actions';
 import {Observable} from 'rxjs';
 import {AppUser} from './models/app-user.model';
-
-interface Alias {
-  name: string;
-  command: string;
-  comment?: string;
-}
+import {selectAppUser} from './state/app/auth/auth.selectors';
 
 @Component({
   selector: 'app-root',
@@ -58,14 +62,13 @@ interface Alias {
     MessageService
   ]
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   store = inject(Store);
   messageService = inject(MessageService);
   updateService = inject(UpdateService);
   settingsService = inject(SettingsService);
   authService = inject(AuthService);
-
-  appUser$: Observable<AppUser | null> = this.store.select(cloudDataFeature.selectAppUser);
+  listenerService = inject(ElectronListenerService);
 
   settingsDrawerVisible = signal<boolean>(false);
   availableAppearanceOptions = this.settingsService.availableAppearanceSettings;
@@ -75,6 +78,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   updateStatus: Signal<UpdateStatus>;
   isUpdateReady: Signal<boolean>;
+
+  appUser$: Observable<AppUser | null> = this.store.pipe(select(selectAppUser));
 
   title = 'AliasBridge UI';
 
@@ -88,7 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
     this.updateStatus = this.updateService.updateStatus;
     this.isUpdateReady = this.updateService.isUpdateReady;
-    // this.store.select(cloudDataFeature.selectAppUser).subscribe(x => console.log(x));
+    this.listenerService.initListeners();
   }
 
   async ngOnInit(): Promise<any> {
@@ -117,43 +122,17 @@ export class AppComponent implements OnInit, OnDestroy {
     window.electronAPI.onUpdaterStatus((result: any) => {
       console.log('UpdaterStatus: ', result);
     });
+  }
 
-    // // Example: Listen for replies from the main process
-    // window.electronAPI?.onMessageReply((message) => {
-    //   console.log('Reply received in renderer:', message);
-    //   this.messageFromMain = message;
-    //   this.cdr.detectChanges(); // Trigger change detection
-    // });
-    //
-    // // Listen for add alias replies
-    // window.electronAPI?.onAddAliasReply((result) => {
-    //   console.log('Add Alias Reply:', result);
-    //   this.addStatusMessage = result.success
-    //     ? `Alias '${result.name}' request sent (implement actual saving!).`
-    //     : `Failed to add alias '${result.name}'.`;
-    //   if (result.success) {
-    //     // Optionally clear form or reload list after successful *request*
-    //     this.newAliasName = '';
-    //     this.newAliasCommand = '';
-    //     this.newAliasComment = '';
-    //     this.loadAliases(); // Refresh list to show (dummy) added alias
-    //   }
-    //   this.cdr.detectChanges();
-    //   // Clear message after a few seconds
-    //   setTimeout(() => {
-    //     this.addStatusMessage = '';
-    //     this.cdr.detectChanges();
-    //   }, 5000);
-    // });
-    //
-    // // Load initial aliases
-    // await this.loadAliases();
+  ngAfterViewInit() {
+    // this.listenerService.initListeners();
   }
 
   ngOnDestroy(): void {
     // IMPORTANT: Remove listeners when component is destroyed to prevent memory leaks
     window.electronAPI?.removeAllListeners('message-from-main');
     window.electronAPI?.removeAllListeners('add-alias-reply');
+    window.electronAPI?.removeAllListeners('aliases-updated');
   }
 
   setPrimeTheme(theme: PrimeTheme) {
@@ -203,12 +182,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   handleUserClickedGithubLogin() {
-    // this.store.dispatch(CloudDataActions.loginUser());
-    this.authService.signInWithGitHub();
+    this.store.dispatch(AuthActions.userClickedGitHubAuth());
   }
 
   logOut(): void {
-    this.authService.signOut();
+    this.store.dispatch(AuthActions.userClickedLogOut());
+    // this.authService.signOut();
   }
 
 }

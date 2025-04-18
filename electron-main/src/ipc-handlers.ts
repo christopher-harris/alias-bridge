@@ -1,5 +1,11 @@
 import {ipcMain, IpcMainEvent} from "electron";
-import {registerAliasHandlers, registerOsHandlers, registerSettingsHandlers, registerUpdateHandlers} from "./ipc";
+import {
+    firestoreAuthHandlers,
+    registerAliasHandlers,
+    registerOsHandlers,
+    registerSettingsHandlers,
+    registerUpdateHandlers
+} from "./ipc";
 
 export function registerAllIpcHandlers(): void {
     console.log('Registering IPC Handlers...');
@@ -9,6 +15,8 @@ export function registerAllIpcHandlers(): void {
         console.log('IPC: Received message:', arg);
         event.reply('message-from-main', `Main process received: "${arg}" at ${new Date()}`);
     });
+
+    firestoreAuthHandlers();
 
     registerOsHandlers();
     registerAliasHandlers();

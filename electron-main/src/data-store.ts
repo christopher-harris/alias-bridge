@@ -9,6 +9,7 @@ import type { Alias } from './types';
 export async function readAliasData(): Promise<Alias[]> {
     try {
         const data = await fs.readFile(JSON_DATA_FILE_PATH, 'utf8');
+        if (!data.trim()) return [];
         const aliases: Alias[] = JSON.parse(data);
         return Array.isArray(aliases) ? aliases : [];
     } catch (error: any) {

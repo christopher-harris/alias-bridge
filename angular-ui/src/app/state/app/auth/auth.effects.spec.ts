@@ -2,21 +2,21 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable } from 'rxjs';
 
-import { CloudDataEffects } from './cloud-data.effects';
+import { AuthEffects } from './auth.effects';
 
-describe('CloudDataEffects', () => {
+describe('AuthEffects', () => {
   let actions$: Observable<any>;
-  let effects: CloudDataEffects;
+  let effects: AuthEffects;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        CloudDataEffects,
+        AuthEffects,
         provideMockActions(() => actions$)
       ]
     });
 
-    effects = TestBed.inject(CloudDataEffects);
+    effects = TestBed.inject(AuthEffects);
   });
 
   it('should be created', () => {

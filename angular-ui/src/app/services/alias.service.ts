@@ -1,9 +1,8 @@
-import {computed, effect, inject, Injectable, NgZone, OnDestroy, Signal, signal, WritableSignal} from '@angular/core';
 import {Alias, NewAlias} from '../electron';
 import {Router} from '@angular/router';
-import {LocalAliasesRepository} from '../state/local-aliases.repository';
 import {Store} from '@ngrx/store';
 import {LocalAliasesActions} from '../state/local-aliases/local-aliases.actions';
+import {effect, inject, Injectable, NgZone, OnDestroy} from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +10,6 @@ import {LocalAliasesActions} from '../state/local-aliases/local-aliases.actions'
 export class AliasService implements OnDestroy {
   store = inject(Store);
   router = inject(Router);
-  localAliasesStore = inject(LocalAliasesRepository);
 
   constructor(private ngZone: NgZone) {
     this.setupListeners();
@@ -68,7 +66,7 @@ export class AliasService implements OnDestroy {
       this.ngZone.run(() => {
         console.log(result);
         if (result.success) {
-          this.store.dispatch(LocalAliasesActions.updateLocalAlias({
+          this.store.dispatch(LocalAliasesActions.updateLocalAliasSuccess({
             alias: {
               id: result.id,
               changes: {
@@ -77,7 +75,7 @@ export class AliasService implements OnDestroy {
             }
           }));
         } else {
-
+          this.store.dispatch(LocalAliasesActions.updateLocalAliasFailed({ error: result.error }));
         }
       });
     });

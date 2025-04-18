@@ -2,7 +2,11 @@ import {ipcMain, IpcMainEvent, IpcMainInvokeEvent} from "electron";
 import {Alias, IncomingAliasData} from "../types";
 import {readAliasData, saveAliasData} from "../data-store";
 import {regenerateAliasShellFile} from "../shell-generator";
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
+import Store from "electron-store";
+import {cloudSyncService} from "../background-sync/cloud-sync.service";
+
+const store = new Store();
 
 export function registerAliasHandlers(): void {
     console.log('Registering Alias IPC Handlers...');
@@ -51,10 +55,30 @@ export function registerAliasHandlers(): void {
 
             console.log(`Alias ${IncomingAliasData.name} processed successfully.`);
             event.reply('add-alias-reply', {success: true, alias: IncomingAliasData});
-
+            if (store.has('user')) {
+                cloudSyncService.uploadAliasToRealtimeDatabase(IncomingAliasData);
+            }
         } catch (error: any) {
             console.error("Error processing add-alias:", error);
             event.reply('add-alias-reply', {success: false, name: receivedAliasData.name, error: error.message});
+        }
+    });
+
+    ipcMain.handle('sync-aliases-from-cloud', async (event: IpcMainInvokeEvent, incomingAliases: Alias[]) => {
+        console.log('IPC: Handling sync-aliases-from-cloud request');
+
+        try {
+            // Replace all aliases with the new list
+            await saveAliasData(incomingAliases);
+
+            // Regenerate the .sh file after saving
+            await regenerateAliasShellFile(incomingAliases);
+
+            console.log('IPC: Alias sync from cloud completed.');
+            return { success: true };
+        } catch (error: any) {
+            console.error("Error during sync-aliases-from-cloud:", error);
+            return { success: false, error: error.message };
         }
     });
 
@@ -111,13 +135,19 @@ export function registerAliasHandlers(): void {
 
             // Save the modified list back to JSON
             await saveAliasData(currentAliases);
+            cloudSyncService.uploadAliasToRealtimeDatabase(updatedAliasData);
 
             // Regenerate the .sh file
             await regenerateAliasShellFile(currentAliases);
 
             console.log(`Alias (ID: ${idToUpdate}) updated successfully to name '${updatedAliasData.name}'.`);
             // Reply with success, include the ID and the (potentially new) name
-            event.reply('update-alias-reply', { success: true, id: idToUpdate, name: updatedAliasData.name, alias: updatedAliasData });
+            event.reply('update-alias-reply', {
+                success: true,
+                id: idToUpdate,
+                name: updatedAliasData.name,
+                alias: updatedAliasData
+            });
 
         } catch (error: any) {
             console.error("Error processing update-alias:", error);
@@ -158,18 +188,24 @@ export function registerAliasHandlers(): void {
 
             // Save the filtered list (without the deleted alias) back to JSON
             await saveAliasData(updatedAliases);
+            cloudSyncService.deleteAlias(idToDelete);
 
             // Regenerate the .sh file
             await regenerateAliasShellFile(updatedAliases);
 
             console.log(`Alias (ID: ${idToDelete}, Name: ${deletedAliasName || 'N/A'}) deleted successfully.`);
             // Reply with success, include the ID and name of the deleted alias
-            event.reply('delete-alias-reply', { success: true, id: idToDelete, name: deletedAliasName });
+            event.reply('delete-alias-reply', {success: true, id: idToDelete, name: deletedAliasName});
 
         } catch (error: any) {
             console.error("Error processing delete-alias:", error);
             // Reply with failure, include the ID we tried to delete
-            event.reply('delete-alias-reply', { success: false, id: idToDelete, name: deletedAliasName, error: error.message });
+            event.reply('delete-alias-reply', {
+                success: false,
+                id: idToDelete,
+                name: deletedAliasName,
+                error: error.message
+            });
         }
     });
 }

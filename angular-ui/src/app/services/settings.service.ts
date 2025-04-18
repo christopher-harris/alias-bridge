@@ -2,7 +2,6 @@ import {effect, Injectable, NgZone, OnDestroy, Signal, signal, WritableSignal, I
 import {ActiveAppearance, AppearanceSetting, PrimeTheme} from '../electron';
 import {DOCUMENT} from '@angular/common';
 import {RendererFactory2} from '@angular/core';
-import {SettingsRepository} from '../state/settings.repository';
 import {Store} from '@ngrx/store';
 import {LocalSettingsActions} from '../state/local-settings/local-settings.actions';
 

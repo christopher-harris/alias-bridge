@@ -1,4 +1,4 @@
-import {Component, inject, signal, Signal} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ToolbarModule} from 'primeng/toolbar';
 import {ButtonModule} from 'primeng/button';
@@ -9,10 +9,11 @@ import {TableModule} from 'primeng/table';
 import {InputTextModule} from 'primeng/inputtext';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {SetupInfoComponent} from '../components/setup-info/setup-info.component';
-import {LocalAliasesRepository} from '../state/local-aliases.repository';
-import {Store} from '@ngrx/store';
+import {select, Store} from '@ngrx/store';
 import {localAliasesFeature} from '../state/local-aliases/local-aliases.reducer';
 import {LocalAliasesActions} from '../state/local-aliases/local-aliases.actions';
+import {Observable} from 'rxjs';
+import {selectLocalAliases} from '../state/local-aliases/local-aliases.selectors';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,12 +34,15 @@ import {LocalAliasesActions} from '../state/local-aliases/local-aliases.actions'
 export class DashboardComponent {
   store = inject(Store);
   aliasService = inject(AliasService);
-  localAliasesStore = inject(LocalAliasesRepository);
   aliases = signal<Alias[]>([]);
+  aliases$: Observable<Alias[]> = this.store.pipe(select(localAliasesFeature.selectAll));
 
   constructor() {
-    this.store.select(localAliasesFeature.selectAll).subscribe(entities => this.aliases.set(entities));
     this.loadAliases();
+    this.aliases$.subscribe(aliases => {
+      console.log('Aliases:', aliases);
+      this.aliases.set(aliases);
+    });
   }
 
   currentlyEditingAliasOriginal = signal<Alias | null>(null);
@@ -64,7 +68,8 @@ export class DashboardComponent {
   onRowEditSave() {
     console.log(this.currentlyEditingAliasForm.value);
     if (this.currentlyEditingAliasForm.valid) {
-      this.aliasService.updateAlias(this.currentlyEditingAliasForm.value.id, this.currentlyEditingAliasForm.value);
+      // this.aliasService.updateAlias(this.currentlyEditingAliasForm.value.id, this.currentlyEditingAliasForm.value);
+      this.store.dispatch(LocalAliasesActions.updateLocalAlias({alias: this.currentlyEditingAliasForm.value}));
       this.currentlyEditingAliasForm.reset();
       this.currentlyEditingAliasOriginal.set(null);
     }
@@ -79,7 +84,6 @@ export class DashboardComponent {
 
   onRowDelete(alias: Alias) {
     console.log(alias);
-    // this.aliasService.deleteAlias(alias.id);
     this.store.dispatch(LocalAliasesActions.deleteLocalAlias({ id: alias.id }));
   }
 }

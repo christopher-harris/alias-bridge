@@ -1,8 +1,8 @@
-@if ((appUser$ | async)?.uid && !(syncingData$ | async)) {
-  <p-button type="button" text size="small">
-    <ng-icon name="tablerCloud" />
-  </p-button>
-}
+<!--@if ((appUser$ | async)?.uid && !(syncingData$ | async)) {-->
+<!--  <p-button type="button" text size="small">-->
+<!--    <ng-icon name="tablerCloud" />-->
+<!--  </p-button>-->
+<!--}-->
 
 @if (!(appUser$ | async)) {
   <p-button type="button" text size="small" severity="warn" pTooltip="Not logged in" tooltipPosition="bottom" showDelay="1000">
@@ -10,8 +10,8 @@
   </p-button>
 }
 
-@if (syncingData$ | async) {
-  <p-button type="button" text size="small" severity="info" disabled>
-    <ng-icon name="tablerCloudNetwork" />
-  </p-button>
-}
+<!--@if (syncingData$ | async) {-->
+<!--  <p-button type="button" text size="small" severity="info" disabled>-->
+<!--    <ng-icon name="tablerCloudNetwork" />-->
+<!--  </p-button>-->
+<!--}-->
