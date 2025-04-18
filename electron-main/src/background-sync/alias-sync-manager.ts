@@ -29,6 +29,8 @@ export async function initBackgroundSync() {
         } else {
             logger.info('Using cloud aliases, writing them locally...');
             await saveAliasData(cloudAliases);
+            await regenerateAliasShellFile(cloudAliases);
+            notifyUIOfAliasUpdate(cloudAliases);
         }
 
         // Start live listener
