@@ -56,42 +56,87 @@ export function mergeAliasData(cloud: AliasData | undefined, local: AliasData | 
     const safeCloud = cloud ?? { aliases: {}, deleted: {}, updatedAt: 0, updatedBy: '' };
     const safeLocal = local ?? { aliases: {}, deleted: {}, updatedAt: 0, updatedBy: '' };
 
-    const mergedAliases = {
-        ...safeCloud.aliases,
-        ...safeLocal.aliases
+    const merged: AliasData = {
+        aliases: {},
+        deleted: {},
+        updatedAt: Date.now(),
+        updatedBy: safeLocal.updatedBy || safeCloud.updatedBy,
     };
 
-    const mergedDeleted = {
-        ...safeCloud.deleted,
-        ...safeLocal.deleted
+    const parseTime = (iso?: string): number => (iso ? new Date(iso).getTime() : 0);
+
+    const allIds = new Set([
+        ...Object.keys(safeCloud.aliases),
+        ...Object.keys(safeLocal.aliases),
+        ...Object.keys(safeCloud.deleted),
+        ...Object.keys(safeLocal.deleted),
+    ]);
+
+    for (const id of allIds) {
+        const cloudAlias = safeCloud.aliases[id];
+        const localAlias = safeLocal.aliases[id];
+        const cloudTombstone = safeCloud.deleted[id];
+        const localTombstone = safeLocal.deleted[id];
+
+        const latestTombstone = [cloudTombstone, localTombstone]
+            .filter(Boolean)
+            .sort((a, b) => parseTime(b?.deletedAt) - parseTime(a?.deletedAt))[0];
+
+        const latestAlias = [cloudAlias, localAlias]
+            .filter(Boolean)
+            .sort((a, b) => parseTime(b?.lastUpdated) - parseTime(a?.lastUpdated))[0];
+
+        if (latestTombstone && (!latestAlias || parseTime(latestTombstone.deletedAt) > parseTime(latestAlias.lastUpdated))) {
+            merged.deleted[id] = latestTombstone;
+        } else if (latestAlias) {
+            merged.aliases[id] = latestAlias;
+        }
     }
 
-    // for (const [id, localAlias] of Object.entries(local.aliases)) {
-    //     const cloudAlias = mergedAliases[id];
-    //     if (!cloudAlias || localAlias.lastUpdated! > cloudAlias.lastUpdated!) {
-    //         mergedAliases[id] = localAlias;
-    //     }
-    // }
-
-    return {
-        aliases: mergedAliases,
-        deleted: mergedDeleted,
-        updatedAt: Math.max(safeCloud.updatedAt, safeLocal.updatedAt),
-        updatedBy: safeLocal.updatedBy || safeCloud.updatedBy
-    };
-
-    // const mergedDeleted: Record<string, DeletedAlias> = {
-    //     ...cloud.deleted,
-    //     ...local.deleted,
-    // };
-    //
-    // return {
-    //     updatedAt: Date.now(),
-    //     updatedBy: local.updatedBy || cloud.updatedBy,
-    //     aliases: mergedAliases,
-    //     deleted: mergedDeleted
-    // };
+    return merged;
 }
+// export function mergeAliasData(cloud: AliasData | undefined, local: AliasData | undefined): AliasData {
+//     const safeCloud = cloud ?? { aliases: {}, deleted: {}, updatedAt: 0, updatedBy: '' };
+//     const safeLocal = local ?? { aliases: {}, deleted: {}, updatedAt: 0, updatedBy: '' };
+//
+//     const merged: AliasData = {
+//         aliases: {},
+//         deleted: {},
+//         updatedAt: Date.now(),
+//         updatedBy: safeLocal.updatedBy || safeCloud.updatedBy,
+//     };
+//
+//     // Gather all alias IDs involved
+//     const allIds = new Set([
+//         ...Object.keys(safeCloud.aliases),
+//         ...Object.keys(safeLocal.aliases),
+//         ...Object.keys(safeCloud.deleted),
+//         ...Object.keys(safeLocal.deleted),
+//     ]);
+//
+//     for (const id of allIds) {
+//         const cloudAlias = safeCloud.aliases[id];
+//         const localAlias = safeLocal.aliases[id];
+//         const cloudTombstone = safeCloud.deleted[id];
+//         const localTombstone = safeLocal.deleted[id];
+//
+//         const latestTombstone = [cloudTombstone, localTombstone]
+//             .filter(Boolean)
+//             .sort((a, b) => (b?.deletedAt || 0) - (a?.deletedAt || 0))[0];
+//
+//         const latestAlias = [cloudAlias, localAlias]
+//             .filter(Boolean)
+//             .sort((a, b) => (b?.lastUpdated || 0) - (a?.lastUpdated || 0))[0];
+//
+//         if (latestTombstone && (!latestAlias || latestTombstone.deletedAt > (latestAlias.lastUpdated || 0))) {
+//             merged.deleted[id] = latestTombstone;
+//         } else if (latestAlias) {
+//             merged.aliases[id] = latestAlias;
+//         }
+//     }
+//
+//     return merged;
+// }
 
 function notifyUIOfAliasUpdate(aliasData: AliasData) {
     const win = BrowserWindow.getAllWindows()[0];
