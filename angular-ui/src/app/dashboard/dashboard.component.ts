@@ -13,7 +13,7 @@ import {select, Store} from '@ngrx/store';
 import {localAliasesFeature} from '../state/local-aliases/local-aliases.reducer';
 import {LocalAliasesActions} from '../state/local-aliases/local-aliases.actions';
 import {Observable} from 'rxjs';
-import {selectLocalAliases} from '../state/local-aliases/local-aliases.selectors';
+import {TooltipModule} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,6 +27,7 @@ import {selectLocalAliases} from '../state/local-aliases/local-aliases.selectors
     FormsModule,
     ReactiveFormsModule,
     SetupInfoComponent,
+    TooltipModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'

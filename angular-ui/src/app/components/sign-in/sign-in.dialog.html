@@ -1,0 +1,39 @@
+<p class="mb-10">Sign in to enable back-ups, syncing across multiple devices & operating systems, and sharing.</p>
+<div class="flex flex-col space-y-12 pb-12">
+  <div class="flex flex-col space-y-6">
+    <p-button [label]="'Login with GitHub'" styleClass="w-full"
+              (onClick)="handleUserClickedGithubLogin()">
+      <ng-icon name="tablerBrandGithub"/>
+    </p-button>
+    <p-button [label]="'Login with Email'" styleClass="w-full" (onClick)="toggleEmailSignInForm()">
+      <ng-icon name="tablerMail"/>
+    </p-button>
+  </div>
+
+  @if (showEmailSignInForm) {
+    <form class="email-login-form flex flex-col space-y-6" [formGroup]="emailSignInForm" (ngSubmit)="action() === 'login' ? handleEmailSignIn() : handleRegisterNewUser()">
+      <input type="text" pInputText formControlName="email" placeholder="Email" class="w-full" />
+      <p-password formControlName="password" [feedback]="false" fluid styleClass="w-full" [toggleMask]="true" />
+      <p-button type="submit" [label]="action() === 'login' ? 'Sign-In' : 'Register'" [disabled]="emailSignInForm.invalid" styleClass="w-full" />
+    </form>
+    @if (action() === 'login') {
+      <div class="flex flex-col space-y-2">
+        <p>New AliasBridge Pro user?</p>
+        <p-button label="Register Account" styleClass="w-full" (onClick)="toggleAction('register')" text />
+      </div>
+    }
+    @if (action() === 'register') {
+      <div class="flex flex-col space-y-2">
+        <p>Already have an AliasBridge Pro account? Can't remember your password?</p>
+        <div class="flex flex-row space-x-2">
+          <p-button label="Sign In" styleClass="w-full" (onClick)="toggleAction('login')" text severity="secondary" />
+          <p-button label="Forgot Password" styleClass="w-full" disabled text severity="secondary" />
+        </div>
+      </div>
+    }
+  }
+
+  @if ((authError$ | async)?.code === 'auth/invalid-credential') {
+    <p-message severity="error" [text]="'Invalid credentials. Please try again.'" [life]="3000" />
+  }
+</div>

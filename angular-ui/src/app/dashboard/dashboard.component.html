@@ -12,7 +12,7 @@
         <td>&nbsp;</td>
       </ng-template>
       <ng-template #body let-alias let-editing="editing" let-rowIndex="rowIndex">
-        <tr [pEditableRow]="alias">
+        <tr [pEditableRow]="alias" [pTooltip]="alias.comment" tooltipPosition="bottom" showDelay="1000">
           <td>
             <p-cellEditor>
               <ng-template #input>
@@ -64,9 +64,3 @@
     <app-setup-info></app-setup-info>
   </div>
 </div>
-
-<!--@if (currentlyEditingAliasForm.value) {-->
-<!--  <pre>{{currentlyEditingAliasForm.value | json}}</pre>-->
-<!--  <p>Original:</p>-->
-<!--  <pre>{{currentlyEditingAliasOriginal() | json}}</pre>-->
-<!--}-->

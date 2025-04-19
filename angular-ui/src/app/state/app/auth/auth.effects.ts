@@ -27,17 +27,18 @@ export class AuthEffects {
     );
   }, {dispatch: false});
 
-  // loadAuths$ = createEffect(() => {
-  //   return this.actions$.pipe(
-  //
-  //     ofType(AuthActions.loadAuths),
-  //     concatMap(() =>
-  //       /** An EMPTY observable only emits completion. Replace with your own observable API request */
-  //       EMPTY.pipe(
-  //         map(data => AuthActions.loadAuthsSuccess({ data })),
-  //         catchError(error => of(AuthActions.loadAuthsFailure({ error }))))
-  //     )
-  //   );
-  // });
+  registerNewUser$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AuthActions.registerEmailUser),
+      exhaustMap(action => this.authService.registerWithEmail(action.email, action.password))
+    );
+  }, {dispatch: false});
+
+  signInEmailUser$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AuthActions.signInEmailUser),
+      exhaustMap(action => this.authService.signInWithEmail(action.email, action.password))
+    );
+  }, {dispatch: false});
 
 }

@@ -39,6 +39,11 @@ import {AuthActions} from './state/app/auth/auth.actions';
 import {Observable} from 'rxjs';
 import {AppUser} from './models/app-user.model';
 import {selectAppUser} from './state/app/auth/auth.selectors';
+import {DialogModule} from 'primeng/dialog';
+import {NgIcon, provideIcons} from '@ng-icons/core';
+import {tablerLogin} from '@ng-icons/tabler-icons';
+import {DialogService} from 'primeng/dynamicdialog';
+import {SignInDialog} from './components/sign-in/sign-in.dialog';
 
 @Component({
   selector: 'app-root',
@@ -55,11 +60,17 @@ import {selectAppUser} from './state/app/auth/auth.selectors';
     MessageModule,
     UpdateStatusComponent,
     HeaderComponent,
+    DialogModule,
+    NgIcon,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   providers: [
-    MessageService
+    MessageService,
+    DialogService,
+  ],
+  viewProviders: [
+    provideIcons({tablerLogin})
   ]
 })
 export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -69,6 +80,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   settingsService = inject(SettingsService);
   authService = inject(AuthService);
   listenerService = inject(ElectronListenerService);
+  dialogService = inject(DialogService);
 
   settingsDrawerVisible = signal<boolean>(false);
   availableAppearanceOptions = this.settingsService.availableAppearanceSettings;
@@ -181,13 +193,19 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     this.updateService.installUpdate();
   }
 
-  handleUserClickedGithubLogin() {
-    this.store.dispatch(AuthActions.userClickedGitHubAuth());
-  }
-
   logOut(): void {
     this.store.dispatch(AuthActions.userClickedLogOut());
     // this.authService.signOut();
+  }
+
+  showSignInDialog(): void {
+    this.settingsDrawerVisible.set(false);
+    this.dialogService.open(SignInDialog, {
+      header: 'Sign In',
+      modal: true,
+      dismissableMask: true,
+      width: '60vw'
+    });
   }
 
 }

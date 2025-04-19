@@ -28,11 +28,14 @@
     </div>
 
     @if ((appUser$ | async)) {
-      <p>Connected as {{(appUser$ | async)?.displayName}}</p>
+      <p>Connected as {{(appUser$ | async)?.displayName ? (appUser$ | async)?.displayName : (appUser$ | async)?.email}}</p>
       <p-button [label]="'Logout'" styleClass="w-full" (onClick)="logOut()" />
     } @else {
-      <p-button [label]="'Login with GitHub'" [icon]="'pi pi-github'" styleClass="w-full" (onClick)="handleUserClickedGithubLogin()" />
+      <p-button [label]="'Login'" styleClass="w-full" (onClick)="showSignInDialog()">
+        <ng-icon name="tablerLogin" />
+      </p-button>
     }
     <app-update-status [updateStatus]="updateStatus()" />
   </div>
 </p-drawer>
+
