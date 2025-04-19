@@ -1,3 +1,5 @@
+import {AliasData, DeletedAlias} from '../../../electron-main/src/types';
+
 interface Alias {
   id: string;
   name: string;
@@ -5,6 +7,13 @@ interface Alias {
   comment?: string;
   created?: Date;
   lastUpdated?: Date;
+}
+
+export interface AliasData {
+  aliases: Record<string, Alias>;
+  deleted: Record<string, DeletedAlias>;
+  updatedAt: number;
+  updatedBy: string;
 }
 
 export type NewAlias = Omit<Alias, 'id'>;
@@ -23,49 +32,45 @@ export interface UpdateStatus {
 export interface IElectronAPI {
   sendMessage: (message: string) => void;
   onMessageReply: (callback: (message: string) => void) => void;
-  getOSPlatform: () => Promise<string>;
 
-  getAliases: () => Promise<Alias[]>;
+  getAliases: () => Promise<Alias[]>; // Updated to return AliasData
+
   addAlias: (alias: NewAlias) => void;
-  syncAliasesFromCloud: (aliases: Alias[]) => Promise<{ success: boolean; error?: string }>;
   onAddAliasReply: (callback: (result: { success: boolean; name: string; error?: string }) => void) => void;
 
-  // --- Update uses ID and full Alias object ---
   updateAlias: (id: string, alias: Alias) => void;
   onUpdateAliasReply: (callback: (result: { success: boolean; id: string; name: string; alias: Alias; error?: string }) => void) => void;
 
-  // --- Delete uses ID ---
   deleteAlias: (id: string) => void;
   onDeleteAliasReply: (callback: (result: { success: boolean; id: string; name: string | null; error?: string }) => void) => void;
 
-  // --- Appearance Methods ---
+  syncAliasesFromCloud: (aliasData: AliasData) => Promise<{ success: boolean; error?: string }>; // Updated to accept AliasData
+
+  getOSPlatform: () => Promise<any>;
+
   getAppearanceSetting: () => Promise<AppearanceSetting>;
-  setAppearanceSetting: (theme: AppearanceSetting) => Promise<{success: boolean, error?: string}>;
+  setAppearanceSetting: (appearance: AppearanceSetting) => Promise<{success: boolean, error?: string}>;
   getSystemAppearance: () => Promise<ActiveAppearance>;
   getCurrentActiveAppearance: () => Promise<ActiveAppearance>;
   onAppearanceUpdated: (callback: (theme: ActiveAppearance) => void) => void;
 
-  // --- Prime Theme Methods ---
   getPrimeThemeSetting: () => Promise<PrimeTheme>;
   setPrimeThemeSetting: (theme: PrimeTheme) => Promise<{success: boolean, error?: string}>;
 
-  // --- Updater Methods ---
   checkForUpdates: () => void;
   installUpdate: () => void;
   onUpdaterStatus: (callback: (status: UpdateStatus) => void) => void;
 
-  // --- Firestore Auth ---
   authenticateWithGitHub: (userData: { user: any; token: string }) => void;
   onAuthSuccess: (callback: (decodedToken: any) => void) => void;
   onAuthError: (callback: (error: any) => void) => void;
 
-  // --- Logout ---
   logOut: () => void;
   onLogOutSuccess: (callback: () => void) => void;
 
-  removeAllListeners: (channel: string) => void;
+  onAliasesUpdated: (callback: (aliasData: AliasData) => void) => void; // Updated callback type
 
-  onAliasesUpdated: (callback: (aliases: Alias[]) => void) => void;
+  removeAllListeners: (channel: string) => void;
 }
 
 // Declare the global window object extension

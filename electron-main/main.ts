@@ -33,6 +33,7 @@ async function initializeApp(): Promise<void> {
     try {
         console.log('Regenerating shell file on startup...');
         const initialAliases = await readAliasData();
+        // const aliases = Object.values(initialAliases.aliases);
         await regenerateAliasShellFile(initialAliases);
     } catch (error) {
         console.error('Failed to regenerate shell file on startup:', error);

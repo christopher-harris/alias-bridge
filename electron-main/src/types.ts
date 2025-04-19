@@ -3,8 +3,8 @@ export interface Alias {
     name: string;
     command: string;
     comment?: string;
-    created?: Date;
-    lastUpdated?: Date;
+    created?: string;
+    lastUpdated?: string;
 }
 
 export type IncomingAliasData = Omit<Alias, 'id'>;
@@ -18,4 +18,16 @@ export interface UpdateStatus {
     status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
     message: string;
     progress?: number; // Percentage for 'downloading' status
+}
+
+export interface DeletedAlias {
+    id: string;
+    deletedAt: string; // ISO string
+}
+
+export interface AliasData {
+    aliases: Record<string, Alias>;
+    deleted: Record<string, DeletedAlias>;
+    updatedAt: number;
+    updatedBy: string;
 }
