@@ -1,6 +1,6 @@
 {
   "name": "alias-bridge",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Cross platform terminal alias manager",
   "main": "dist-electron/main.js",
   "scripts": {
