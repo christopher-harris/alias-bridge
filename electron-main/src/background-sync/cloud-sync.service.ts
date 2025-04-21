@@ -4,7 +4,7 @@ import {database} from "firebase-admin";
 import {getClientId} from "../client-id";
 
 let db: database.Database;
-let userId = 'anonymous';
+let userId: string | null = null;
 
 function getUserPath(userId: string) {
     const env = process.env.FIREBASE_ENV || 'dev';
@@ -23,6 +23,10 @@ export const cloudSyncService = {
         if (!db) {
             console.error('CloudSyncService accessed before init or Firebase Admin initialized.');
             throw new Error('Database not available');
+        }
+
+        if (!userId) {
+            throw new Error('[getAliases]: User ID not set. cloudSyncService.init(uid) must be called with a valid user ID before using this method.');
         }
 
         try {
@@ -44,6 +48,10 @@ export const cloudSyncService = {
     async uploadAliases(data: AliasData): Promise<void> {
         if (!db) throw new Error('Database not available');
 
+        if (!userId) {
+            throw new Error('[uploadAliases]: User ID not set. cloudSyncService.init(uid) must be called with a valid user ID before using this method.');
+        }
+
         try {
             const clientId = getClientId();
             await db.ref(getUserPath(userId)).set({
@@ -60,6 +68,10 @@ export const cloudSyncService = {
 
     subscribeToChanges(onChange: (data: AliasData) => void): () => void {
         if (!db) throw new Error('Database not available');
+
+        if (!userId) {
+            throw new Error('[subscribeToChanges]: User ID not set. cloudSyncService.init(uid) must be called with a valid user ID before using this method.');
+        }
 
         const clientId = getClientId();
         const ref = db.ref(getUserPath(userId));
@@ -82,6 +94,10 @@ export const cloudSyncService = {
     async uploadAliasToRealtimeDatabase(alias: Alias): Promise<void> {
         if (!db) throw new Error('Database not available');
 
+        if (!userId) {
+            throw new Error('[uploadAliasToRealtimeDatabase]: User ID not set. cloudSyncService.init(uid) must be called with a valid user ID before using this method.');
+        }
+
         const clientId = getClientId();
         const updates: Record<string, any> = {
             [`aliases/${alias.id}`]: alias,
@@ -94,6 +110,10 @@ export const cloudSyncService = {
 
     async deleteAlias(aliasId: string): Promise<void> {
         if (!db) throw new Error('Database not available');
+
+        if (!userId) {
+            throw new Error('[deleteAlias]: User ID not set. cloudSyncService.init(uid) must be called with a valid user ID before using this method.');
+        }
 
         const clientId = getClientId();
 
