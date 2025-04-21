@@ -1,9 +1,9 @@
-import {firebaseAdmin} from "./firebase-admin";
+import {firebaseAdmin, getDatabase} from "./firebase-admin";
 import {Alias, AliasData, DeletedAlias} from "../types";
 import {database} from "firebase-admin";
 import {getClientId} from "../client-id";
 
-const db: database.Database = firebaseAdmin.database();
+let db: database.Database;
 let userId = 'anonymous';
 
 function getUserPath(userId: string) {
@@ -14,9 +14,17 @@ function getUserPath(userId: string) {
 export const cloudSyncService = {
     init(uid?: string) {
         if (uid) userId = uid;
+        if (!db) {
+            db = getDatabase();
+        }
     },
 
     async getAliases(): Promise<AliasData> {
+        if (!db) {
+            console.error('CloudSyncService accessed before init or Firebase Admin initialized.');
+            throw new Error('Database not available');
+        }
+
         try {
             const snapshot = await db.ref(getUserPath(userId)).once('value');
             const data = snapshot.val();
@@ -34,6 +42,8 @@ export const cloudSyncService = {
     },
 
     async uploadAliases(data: AliasData): Promise<void> {
+        if (!db) throw new Error('Database not available');
+
         try {
             const clientId = getClientId();
             await db.ref(getUserPath(userId)).set({
@@ -49,6 +59,8 @@ export const cloudSyncService = {
     },
 
     subscribeToChanges(onChange: (data: AliasData) => void): () => void {
+        if (!db) throw new Error('Database not available');
+
         const clientId = getClientId();
         const ref = db.ref(getUserPath(userId));
 
@@ -68,6 +80,8 @@ export const cloudSyncService = {
     },
 
     async uploadAliasToRealtimeDatabase(alias: Alias): Promise<void> {
+        if (!db) throw new Error('Database not available');
+
         const clientId = getClientId();
         const updates: Record<string, any> = {
             [`aliases/${alias.id}`]: alias,
@@ -79,6 +93,8 @@ export const cloudSyncService = {
     },
 
     async deleteAlias(aliasId: string): Promise<void> {
+        if (!db) throw new Error('Database not available');
+
         const clientId = getClientId();
 
         const tombstone: DeletedAlias = {

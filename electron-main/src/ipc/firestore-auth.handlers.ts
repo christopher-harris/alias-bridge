@@ -48,7 +48,7 @@ export function firestoreAuthHandlers(): void {
     ipcMain.on('firebase-github-auth', async (event, userData: { user: any, token: string }) => {
         try {
             // Verify the Firebase ID token received from Angular
-            const decodedToken = await authAdmin.verifyIdToken(userData.token);
+            const decodedToken = await authAdmin().verifyIdToken(userData.token);
 
             const userDataToStore = {
                 uid: decodedToken.uid,

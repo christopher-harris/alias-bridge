@@ -43,7 +43,11 @@
       "dist-electron/**/*",
       "dist/alias-bridge-ui/**/*",
       "package.json",
-      "assets/build/alias_bridge_icon_dark/icon.iconset/icon_16x16.png"
+      "assets/build/alias_bridge_icon_dark/icon.iconset/icon_16x16.png",
+      {
+        "from": ".env.prod",
+        "to": ".env.prod"
+      }
     ],
     "extraMetadata": {
       "main": "dist-electron/main.js"

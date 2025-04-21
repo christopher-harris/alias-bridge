@@ -10,6 +10,8 @@ import {closeViewerWindow} from "./src/viewer-window-manager";
 import {initAutoUpdater} from './src/update-manager';
 import {initBackgroundSync, stopBackgroundSync} from "./src/background-sync/alias-sync-manager";
 import Store from "electron-store";
+import {setupCredentialsIfNeeded} from "./src/background-sync/setup-credentials";
+import {initializeFirebaseAdmin} from "./src/background-sync/firebase-admin";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -24,6 +26,8 @@ async function initializeApp(): Promise<void> {
     const savedUser = store.get('user');
     console.log('Main savedUser: ', savedUser);
     console.log('App is ready, initializing...');
+
+    // await import('./src/background-sync/firebase-admin').then(module => module.initializationPromise);
 
     if (savedUser) {
         await initBackgroundSync();
@@ -69,7 +73,11 @@ async function initializeApp(): Promise<void> {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(initializeApp);
+app.whenReady().then(async () => {
+    await setupCredentialsIfNeeded();
+    await initializeFirebaseAdmin();
+    await initializeApp();
+});
 
 // Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
