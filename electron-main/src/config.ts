@@ -1,10 +1,18 @@
 // electron-main/src/config.ts
 import path from 'path';
 import os from 'os';
-import { app } from 'electron'; // Import app only if needed for paths like userData
+import { app } from 'electron';
+import dotenv from "dotenv"; // Import app only if needed for paths like userData
+
+export const FIREBASE_ENV: 'dev' | 'prod' =
+    process.env.FIREBASE_ENV === 'prod' ? 'prod' : 'dev';
 
 export const IS_DEV = process.env.NODE_ENV !== 'production' && !app.isPackaged;
 export const PLATFORM = process.platform; // 'darwin', 'win32', 'linux'
+
+const envFilePath = IS_DEV ? path.resolve(__dirname, '../.env') : path.join(process.resourcesPath, '.env.prod');
+
+dotenv.config({ path: envFilePath });
 
 export const JSON_DATA_FILENAME = '.alias_bridge_data.json';
 export const SHELL_ALIAS_FILENAME = '.alias_bridge_aliases.sh'; // Keep using .sh for Phase 1

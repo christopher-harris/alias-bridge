@@ -1,5 +1,5 @@
 import {FirebaseApp, initializeApp} from 'firebase/app';
-import {getFirestore, collection, getDocs, setDoc, doc, onSnapshot, Firestore} from 'firebase/firestore';
+import {getFirestore, Firestore} from 'firebase/firestore';
 import {Auth, getAuth} from "firebase/auth";
 import admin from "firebase-admin";
 

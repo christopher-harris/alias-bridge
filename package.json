@@ -7,11 +7,12 @@
     "version:write": "node ./scripts/write-version.js",
     "ng:build": "cd angular-ui && ng build --configuration production --base-href ./",
     "tsc:electron": "tsc -p electron-main/tsconfig.json",
-    "electron:package": "node -r dotenv/config ./node_modules/electron-builder/out/cli/cli.js",
+    "electron:package": "cross-env NODE_ENV=production node -r dotenv/config ./node_modules/electron-builder/out/cli/cli.js",
     "build": "npm run version:write && npm run ng:build && npm run tsc:electron && npm run electron:package",
     "tsc:electron:watch": "tsc -p electron-main/tsconfig.json --watch",
     "ng:serve": "cd angular-ui && ng serve",
     "electron:start:dev": "electron . --trace-warnings",
+    "electron:start:prod": "",
     "start:dev": "npm run tsc:electron && concurrently -k \"npm:ng:serve\" \"npm:tsc:electron:watch\" \"wait-on http://localhost:4200 && npm run electron:start:dev\""
   },
   "keywords": [],
