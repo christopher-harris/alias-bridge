@@ -1,11 +1,36 @@
 import { BrowserWindow, app, Event } from 'electron'; // Added Event type
 import path from 'path';
-import url from 'url';
 import { IS_DEV } from './config';
-import installExtension, {REDUX_DEVTOOLS} from "electron-devtools-installer"; // Use IS_DEV from config
 
 // Module-level variable to hold the main window instance
 let mainWindow: BrowserWindow | null = null;
+
+function setupDevEnvironment(window: BrowserWindow) {
+    console.log('Setting up development environment...');
+    window.loadURL('http://localhost:4200'); // Assumes main app is at root route
+    window.webContents.openDevTools(); // Open DevTools in dev
+
+    // --- Dynamic Import for DevTools Extension ---
+    import('electron-devtools-installer').then(module => {
+        // Access the default export and named exports from the resolved module
+        const installExtension = module.default; // Common pattern for default export
+        const { REDUX_DEVTOOLS } = module; // Assuming REDUX_DEVTOOLS is a named export
+
+        if (!REDUX_DEVTOOLS) {
+            console.warn('REDUX_DEVTOOLS constant not found in electron-devtools-installer module.');
+            return;
+        }
+
+        installExtension(REDUX_DEVTOOLS)
+            .then((name) => console.log(`Added DevTools Extension: ${name}`))
+            .catch((err) => console.error('Error installing DevTools extension:', err));
+
+    }).catch(err => {
+        console.error('Failed to dynamically import electron-devtools-installer:', err);
+    });
+    // --- End Dynamic Import ---
+}
+
 
 /**
  * Returns the current mainWindow instance if it exists and is not destroyed.
@@ -79,10 +104,11 @@ function createWindowInternal(): BrowserWindow {
 
     // --- Load the Angular application (main route) ---
     if (IS_DEV) {
-        console.log('Loading main window URL (Dev): http://localhost:4200');
-        newWindow.loadURL('http://localhost:4200'); // Assumes main app is at root route
-        newWindow.webContents.openDevTools(); // Open DevTools in dev
-        installExtension(REDUX_DEVTOOLS);
+        setupDevEnvironment(newWindow);
+        // console.log('Loading main window URL (Dev): http://localhost:4200');
+        // newWindow.loadURL('http://localhost:4200'); // Assumes main app is at root route
+        // newWindow.webContents.openDevTools(); // Open DevTools in dev
+        // installExtension(REDUX_DEVTOOLS);
     } else {
         const appRootPath = app.getAppPath();
         const indexPath = path.join(appRootPath, 'dist/alias-bridge-ui/browser/index.html');
