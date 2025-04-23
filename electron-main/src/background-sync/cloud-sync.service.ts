@@ -2,13 +2,18 @@ import {firebaseAdmin, getDatabase} from "./firebase-admin";
 import {Alias, AliasData, DeletedAlias} from "../types";
 import {database} from "firebase-admin";
 import {getClientId} from "../client-id";
+import logger from "electron-log";
+import {FIREBASE_ENV} from "../config";
 
 let db: database.Database;
 let userId: string | null = null;
 
 function getUserPath(userId: string) {
-    const env = process.env.FIREBASE_ENV || 'dev';
-    return `${env}/users/${userId}`;
+    logger.info('Cloud-Sync env: ', FIREBASE_ENV);
+    return `${FIREBASE_ENV}/users/${userId}`;
+    // const env = process.env.FIREBASE_ENV || 'dev';
+    // logger.info('Cloud-Sync env: ', env);
+    // return `${env}/users/${userId}`;
 }
 
 export const cloudSyncService = {
@@ -46,6 +51,7 @@ export const cloudSyncService = {
     },
 
     async uploadAliases(data: AliasData): Promise<void> {
+        logger.info("cloud-sync-service: uploading aliases");
         if (!db) throw new Error('Database not available');
 
         if (!userId) {

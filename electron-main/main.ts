@@ -1,9 +1,11 @@
-import {app, BrowserWindow} from 'electron';
+import './src/config';
+
+import {PLATFORM} from './src/config';
+import {app} from 'electron';
 import {registerAllIpcHandlers} from './src/ipc-handlers';
-import {ensureMainWindow, showMainWindow, getMainWindow} from './src/window-manager';
+import {ensureMainWindow, showMainWindow} from './src/window-manager';
 import {readAliasData} from './src/data-store'; // For initial generation
 import {regenerateAliasShellFile} from './src/shell-generator'; // For initial generation
-import {PLATFORM} from './src/config';
 import {watchSystemAppearance} from "./src/settings-manager";
 import {createTray, destroyTray} from "./src/tray-manager";
 import {closeViewerWindow} from "./src/viewer-window-manager";
@@ -12,6 +14,7 @@ import {initBackgroundSync, stopBackgroundSync} from "./src/background-sync/alia
 import Store from "electron-store";
 import {setupCredentialsIfNeeded} from "./src/background-sync/setup-credentials";
 import {initializeFirebaseAdmin} from "./src/background-sync/firebase-admin";
+import logger from "electron-log";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -24,8 +27,9 @@ if (require('electron-squirrel-startup')) {
 async function initializeApp(): Promise<void> {
     const store = new Store();
     const savedUser = store.get('user');
-    console.log('Main savedUser: ', savedUser);
-    console.log('App is ready, initializing...');
+    // logger.info('[Main] savedUser: ', savedUser);
+    logger.info('App is ready, initializing...');
+    logger.info('Resources Path:', process.resourcesPath);
 
     // await import('./src/background-sync/firebase-admin').then(module => module.initializationPromise);
 

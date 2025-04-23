@@ -12,7 +12,9 @@
     "tsc:electron:watch": "tsc -p electron-main/tsconfig.json --watch",
     "ng:serve": "cd angular-ui && ng serve",
     "electron:start:dev": "electron . --trace-warnings",
-    "electron:start:prod": "",
+    "copy:env:prod": "cp .env.prod dist-electron/.env.prod",
+    "start:prod-dev": "npm run tsc:electron && npm run copy:env:prod && FORCE_ENV_FILE=prod electron .",
+    "electron:start:prod": "cross-env NODE_ENV=production electron .",
     "start:dev": "npm run tsc:electron && concurrently -k \"npm:ng:serve\" \"npm:tsc:electron:watch\" \"wait-on http://localhost:4200 && npm run electron:start:dev\""
   },
   "keywords": [],
@@ -21,7 +23,9 @@
   "build": {
     "appId": "com.jrm-labs.aliasbridge",
     "productName": "AliasBridge",
-    "asar": false,
+    "asar": {
+      "unpack": ".env.prod"
+    },
     "directories": {
       "output": "release/",
       "buildResources": "assets/build"
