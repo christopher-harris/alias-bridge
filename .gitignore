@@ -86,4 +86,4 @@ Thumbs.db
 /_dev-app-update.yml
 /dev-app-update.yml
 /electron-main/src/secrets/*
-/.env.prod
+!/.env.prod

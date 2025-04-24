@@ -23,9 +23,7 @@
   "build": {
     "appId": "com.jrm-labs.aliasbridge",
     "productName": "AliasBridge",
-    "asar": {
-      "unpack": ".env.prod"
-    },
+    "asar": true,
     "directories": {
       "output": "release/",
       "buildResources": "assets/build"
@@ -34,7 +32,9 @@
       "dist-electron/**/*",
       "dist/alias-bridge-ui/**/*",
       "package.json",
-      "assets/build/alias_bridge_icon_dark/icon.iconset/icon_16x16.png",
+      "assets/build/alias_bridge_icon_dark/icon.iconset/icon_16x16.png"
+    ],
+    "extraResources": [
       {
         "from": ".env.prod",
         "to": ".env.prod"
